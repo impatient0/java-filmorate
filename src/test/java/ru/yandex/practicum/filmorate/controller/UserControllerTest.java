@@ -57,7 +57,8 @@ public class UserControllerTest {
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/users"))
             .andExpect(status().isOk()).andReturn();
         String jsonResponse = result.getResponse().getContentAsString();
-        List<User> actualResponse = mapper.readValue(jsonResponse, new TypeReference<>() {});
+        List<User> actualResponse = mapper.readValue(jsonResponse, new TypeReference<>() {
+        });
         assertEquals(MOCK_USER_NAME, actualResponse.getLast().getName());
         assertEquals(MOCK_USER_LOGIN, actualResponse.getLast().getLogin());
         assertEquals(MOCK_USER_BIRTHDAY, actualResponse.getLast().getBirthday());
@@ -107,6 +108,7 @@ public class UserControllerTest {
         assertEquals(MOCK_USER_BIRTHDAY, actualResponse.getBirthday());
         assertEquals(MOCK_USER_EMAIL, actualResponse.getEmail());
     }
+
     @Test
     void shouldReturn201ForValidPostRequestWithNoName() throws Exception {
         log.info("Testing: shouldReturn201ForValidPostRequestWithNoName");
@@ -170,7 +172,7 @@ public class UserControllerTest {
         User newUser = new User();
         newUser.setEmail("invalid");
         newUser.setId(createdUser.getId());
-        MvcResult result =  mockMvc.perform(
+        MvcResult result = mockMvc.perform(
                 MockMvcRequestBuilders.put("/users")
                     .content(mapper.writeValueAsString(newUser))
                     .contentType(MediaType.APPLICATION_JSON))
@@ -205,7 +207,7 @@ public class UserControllerTest {
         newUser.setName("new name");
         newUser.setBirthday(LocalDate.of(1999, 1, 1));
         newUser.setId(createdUser.getId());
-        MvcResult resultPut =  mockMvc.perform(
+        MvcResult resultPut = mockMvc.perform(
                 MockMvcRequestBuilders.put("/users")
                     .content(mapper.writeValueAsString(newUser))
                     .contentType(MediaType.APPLICATION_JSON)

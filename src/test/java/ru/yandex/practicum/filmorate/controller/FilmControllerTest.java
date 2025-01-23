@@ -52,9 +52,11 @@ public class FilmControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated());
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/films")).andExpect(status().isOk()).andReturn();
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/films"))
+            .andExpect(status().isOk()).andReturn();
         String jsonResponse = result.getResponse().getContentAsString();
-        List<Film> actualResponse = mapper.readValue(jsonResponse, new TypeReference<>(){});
+        List<Film> actualResponse = mapper.readValue(jsonResponse, new TypeReference<>() {
+        });
         assertEquals(MOCK_FILM_NAME, actualResponse.getLast().getName());
         assertEquals(MOCK_FILM_RELEASE_DATE, actualResponse.getLast().getReleaseDate());
         assertEquals(MOCK_FILM_DESCRIPTION, actualResponse.getLast().getDescription());
@@ -177,7 +179,7 @@ public class FilmControllerTest {
         newFilm.setDescription("new description");
         newFilm.setDuration(42);
         newFilm.setId(createdFilm.getId());
-        MvcResult resultPut =  mockMvc.perform(
+        MvcResult resultPut = mockMvc.perform(
                 MockMvcRequestBuilders.put("/films")
                     .content(mapper.writeValueAsString(newFilm))
                     .contentType(MediaType.APPLICATION_JSON)
