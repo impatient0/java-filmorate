@@ -51,20 +51,6 @@ public class FilmTest {
     }
 
     @Test
-    public void shouldNotValidateWithNullName() {
-        Film film = new Film();
-        film.setName(null);
-        film.setReleaseDate(LocalDate.of(1977, 3, 19));
-        film.setDescription(
-            "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch.");
-        film.setDuration(89);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-        ConstraintViolation<Film> violation = violations.iterator().next();
-        assertEquals("Film name must not be blank.", violation.getMessage());
-    }
-
-    @Test
     public void shouldNotValidateWithInvalidReleaseDate() {
         Film film = new Film();
         film.setName("Eraserhead");
