@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = LaterThanValidator.class)
 public @interface LaterThan {
 
-    String message() default "Дата вне заданного интервала.";
+    String message() default "Date is too old to be valid.";
 
     Class<?>[] groups() default {};
 
