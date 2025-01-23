@@ -55,10 +55,10 @@ public class FilmControllerTest {
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/films")).andExpect(status().isOk()).andReturn();
         String jsonResponse = result.getResponse().getContentAsString();
         List<Film> actualResponse = mapper.readValue(jsonResponse, new TypeReference<>(){});
-        assertEquals(MOCK_FILM_NAME, actualResponse.getFirst().getName());
-        assertEquals(MOCK_FILM_RELEASE_DATE, actualResponse.getFirst().getReleaseDate());
-        assertEquals(MOCK_FILM_DESCRIPTION, actualResponse.getFirst().getDescription());
-        assertEquals(MOCK_FILM_DURATION, actualResponse.getFirst().getDuration());
+        assertEquals(MOCK_FILM_NAME, actualResponse.getLast().getName());
+        assertEquals(MOCK_FILM_RELEASE_DATE, actualResponse.getLast().getReleaseDate());
+        assertEquals(MOCK_FILM_DESCRIPTION, actualResponse.getLast().getDescription());
+        assertEquals(MOCK_FILM_DURATION, actualResponse.getLast().getDuration());
     }
 
     @Test
