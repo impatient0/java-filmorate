@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.ErrorMessage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @RestController
@@ -35,31 +36,35 @@ public class FilmController {
     public ResponseEntity<?> create(@Valid @RequestBody Film newFilm, BindingResult result) {
         log.info("Request to create new film received: {}", newFilm);
         if (result.hasErrors()) {
-            log.warn("Validation error for creating new film: {}", newFilm);
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+            ErrorMessage errorMessage = new ErrorMessage(
+                result.getAllErrors().getFirst().getDefaultMessage());
+            log.warn("Validation error for creating new film: {}", errorMessage.getMessage());
+            return ResponseEntity.badRequest().body(errorMessage);
         }
         newFilm.setId(getNextId());
         films.put(newFilm.getId(), newFilm);
         log.info("New film created with ID {}", newFilm.getId());
-        return ResponseEntity.ok(newFilm);
+        return new ResponseEntity<>(newFilm, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<?> update(@Valid @RequestBody Film newFilm, BindingResult result) {
         log.info("Request to update film received: {}", newFilm);
+        if (films.get(newFilm.getId()) == null) {
+            log.warn("Film with ID {} not found for updating", newFilm.getId());
+            ErrorMessage errorMessage = new ErrorMessage(
+                String.format("Film with ID %d not found for updating", newFilm.getId()));
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
         if (result.hasErrors()) {
-            log.warn("Validation error for updating film: {}", newFilm);
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+            ErrorMessage errorMessage = new ErrorMessage(
+                result.getAllErrors().getFirst().getDefaultMessage());
+            log.warn("Validation error for updating film: {}", errorMessage.getMessage());
+            return ResponseEntity.badRequest().body(errorMessage);
         }
-        if (films.get(newFilm.getId()) != null) {
-            films.put(newFilm.getId(), newFilm);
-            log.info("Film with ID {} updated", newFilm.getId());
-            return ResponseEntity.ok(newFilm);
-        }
-        log.warn("Film with ID {} not found for updating", newFilm.getId());
-        Map<String, String> message = Map.of("message",
-            String.format("Film with ID %d not found for updating", newFilm.getId()));
-        return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        films.put(newFilm.getId(), newFilm);
+        log.info("Film with ID {} updated", newFilm.getId());
+        return ResponseEntity.ok(newFilm);
     }
 
     private long getNextId() {

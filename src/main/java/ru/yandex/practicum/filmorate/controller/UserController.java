@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.exception.ErrorMessage;
 import ru.yandex.practicum.filmorate.model.User;
 
 @RestController
@@ -35,8 +36,10 @@ public class UserController {
     public ResponseEntity<?> create(@Valid @RequestBody User newUser, BindingResult result) {
         log.info("Request to create new user received: {}", newUser);
         if (result.hasErrors()) {
-            log.warn("Validation error for creating new user: {}", result.getAllErrors());
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+            ErrorMessage errorMessage = new ErrorMessage(
+                result.getAllErrors().getFirst().getDefaultMessage());
+            log.warn("Validation error for creating new user: {}", errorMessage.getMessage());
+            return ResponseEntity.badRequest().body(errorMessage);
         }
         newUser.setId(getNextId());
         if (newUser.getName() == null) {
@@ -45,29 +48,31 @@ public class UserController {
         }
         users.put(newUser.getId(), newUser);
         log.info("New user created with ID {}", newUser.getId());
-        return ResponseEntity.ok(newUser);
+        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<?> update(@Valid @RequestBody User newUser, BindingResult result) {
         log.info("Request to update user received: {}", newUser);
+        if (users.get(newUser.getId()) == null) {
+            log.warn("User with ID {} not found for updating", newUser.getId());
+            ErrorMessage errorMessage = new ErrorMessage(
+                String.format("User with ID %d not found for updating", newUser.getId()));
+            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+        }
         if (result.hasErrors()) {
-            log.warn("Validation error for updating user: {}", result.getAllErrors());
-            return ResponseEntity.badRequest().body(result.getAllErrors());
+            ErrorMessage errorMessage = new ErrorMessage(
+                result.getAllErrors().getFirst().getDefaultMessage());
+            log.warn("Validation error for updating user: {}", errorMessage.getMessage());
+            return ResponseEntity.badRequest().body(errorMessage);
         }
-        if (users.get(newUser.getId()) != null) {
-            if (newUser.getName() == null) {
-                log.debug("User name is not provided. Using login as name.");
-                newUser.setName(newUser.getLogin());
-            }
-            users.put(newUser.getId(), newUser);
-            log.info("User with ID {} updated", newUser.getId());
-            return ResponseEntity.ok(newUser);
+        if (newUser.getName() == null) {
+            log.debug("User name is not provided. Using login as name.");
+            newUser.setName(newUser.getLogin());
         }
-        log.warn("User with ID {} not found for updating", newUser.getId());
-        Map<String, String> message = Map.of("message",
-            String.format("User with ID %d not found for updating", newUser.getId()));
-        return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        users.put(newUser.getId(), newUser);
+        log.info("User with ID {} updated", newUser.getId());
+        return ResponseEntity.ok(newUser);
     }
 
 
