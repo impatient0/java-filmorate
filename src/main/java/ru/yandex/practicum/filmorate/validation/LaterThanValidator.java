@@ -4,7 +4,6 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 public class LaterThanValidator implements ConstraintValidator<LaterThan, LocalDate> {
 
@@ -12,12 +11,8 @@ public class LaterThanValidator implements ConstraintValidator<LaterThan, LocalD
 
     @Override
     public void initialize(LaterThan constraintAnnotation) {
-        try {
-            this.referenceDate = LocalDate.parse(constraintAnnotation.value(),
-                DateTimeFormatter.ISO_DATE);
-        } catch (DateTimeParseException e) {
-            this.referenceDate = LocalDate.MIN;
-        }
+        this.referenceDate = LocalDate.parse(constraintAnnotation.value(),
+            DateTimeFormatter.ISO_DATE);
     }
 
     @Override
