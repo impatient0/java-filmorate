@@ -17,6 +17,11 @@ public class FilmTest {
 
     private static Validator validator;
 
+    private static final String MOCK_FILM_NAME = "Eraserhead";
+    private static final LocalDate MOCK_FILM_RELEASE_DATE = LocalDate.of(1977, 3, 19);
+    private static final String MOCK_FILM_DESCRIPTION = "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch.";
+    private static final int MOCK_FILM_DURATION = 89;
+
     @BeforeAll
     public static void setUpValidator() {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
@@ -27,11 +32,10 @@ public class FilmTest {
     @Test
     public void shouldValidateWithValidParameters() {
         Film film = new Film();
-        film.setName("Eraserhead");
-        film.setReleaseDate(LocalDate.of(1977, 3, 19));
-        film.setDescription(
-            "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch.");
-        film.setDuration(89);
+        film.setName(MOCK_FILM_NAME);
+        film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
+        film.setDescription(MOCK_FILM_DESCRIPTION);
+        film.setDuration(MOCK_FILM_DURATION);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty());
     }
@@ -40,10 +44,9 @@ public class FilmTest {
     public void shouldNotValidateWithEmptyName() {
         Film film = new Film();
         film.setName("");
-        film.setReleaseDate(LocalDate.of(1977, 3, 19));
-        film.setDescription(
-            "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch.");
-        film.setDuration(89);
+        film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
+        film.setDescription(MOCK_FILM_DESCRIPTION);
+        film.setDuration(MOCK_FILM_DURATION);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
         ConstraintViolation<Film> violation = violations.iterator().next();
@@ -53,11 +56,10 @@ public class FilmTest {
     @Test
     public void shouldNotValidateWithInvalidReleaseDate() {
         Film film = new Film();
-        film.setName("Eraserhead");
+        film.setName(MOCK_FILM_NAME);
         film.setReleaseDate(LocalDate.of(1812, 6, 24));
-        film.setDescription(
-            "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch.");
-        film.setDuration(89);
+        film.setDescription(MOCK_FILM_DESCRIPTION);
+        film.setDuration(MOCK_FILM_DURATION);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
         ConstraintViolation<Film> violation = violations.iterator().next();
@@ -67,10 +69,9 @@ public class FilmTest {
     @Test
     public void shouldNotValidateWithNegativeDuration() {
         Film film = new Film();
-        film.setName("Eraserhead");
-        film.setReleaseDate(LocalDate.of(1977, 3, 19));
-        film.setDescription(
-            "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch.");
+        film.setName(MOCK_FILM_NAME);
+        film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
+        film.setDescription(MOCK_FILM_DESCRIPTION);
         film.setDuration(-89);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
@@ -81,12 +82,10 @@ public class FilmTest {
     @Test
     public void shouldNotValidateWithDescriptionExceedingCharacterLimit() {
         Film film = new Film();
-        film.setName("Eraserhead");
-        film.setReleaseDate(LocalDate.of(1977, 3, 19));
-        film.setDescription(
-            "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch. ".repeat(
-                1000));
-        film.setDuration(89);
+        film.setName(MOCK_FILM_NAME);
+        film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
+        film.setDescription(" ".repeat(1000));
+        film.setDuration(MOCK_FILM_DURATION);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
         ConstraintViolation<Film> violation = violations.iterator().next();
