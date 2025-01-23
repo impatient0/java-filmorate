@@ -25,12 +25,6 @@ public class LaterThanTest {
         }
     }
 
-    @Data
-    static class TestClass {
-        @LaterThan(value = "2011-09-11")
-        private LocalDate testDate;
-    }
-
     @Test
     void shouldPassForDateAfterConstraint() {
         TestClass testClass = new TestClass();
@@ -55,6 +49,13 @@ public class LaterThanTest {
         testClass.setTestDate(null);
         Set<ConstraintViolation<TestClass>> violations = validator.validate(testClass);
         assertTrue(violations.isEmpty());
+    }
+
+    @Data
+    static class TestClass {
+
+        @LaterThan(value = "2011-09-11")
+        private LocalDate testDate;
     }
 
 }

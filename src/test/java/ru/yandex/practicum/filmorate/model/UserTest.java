@@ -15,12 +15,11 @@ import org.junit.jupiter.api.Test;
 
 public class UserTest {
 
-    private static Validator validator;
-
     private static final String MOCK_USER_EMAIL = "john.doe@example.com";
     private static final String MOCK_USER_LOGIN = "john_doe";
     private static final String MOCK_USER_NAME = "John Doe";
     private static final LocalDate MOCK_USER_BIRTHDAY = LocalDate.of(1990, 5, 15);
+    private static Validator validator;
 
     @BeforeAll
     public static void setUpValidator() {
