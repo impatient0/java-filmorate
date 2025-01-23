@@ -15,12 +15,11 @@ import org.junit.jupiter.api.Test;
 
 public class FilmTest {
 
-    private static Validator validator;
-
     private static final String MOCK_FILM_NAME = "Eraserhead";
     private static final LocalDate MOCK_FILM_RELEASE_DATE = LocalDate.of(1977, 3, 19);
     private static final String MOCK_FILM_DESCRIPTION = "Eraserhead is a 1977 American independent surrealist body horror film written, directed, produced, and edited by David Lynch.";
     private static final int MOCK_FILM_DURATION = 89;
+    private static Validator validator;
 
     @BeforeAll
     public static void setUpValidator() {
