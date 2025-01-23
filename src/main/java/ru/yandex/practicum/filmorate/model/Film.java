@@ -5,9 +5,11 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.LaterThan;
 
 @Data
+@NoArgsConstructor
 public class Film {
 
     long id;
