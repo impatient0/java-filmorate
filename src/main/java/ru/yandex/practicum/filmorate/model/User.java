@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class User {
+public non-sealed class User implements ResponseBody {
 
     long id;
     @Email(message = "E-mail must be valid.")
