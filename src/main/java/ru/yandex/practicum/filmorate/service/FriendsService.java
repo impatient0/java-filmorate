@@ -22,12 +22,12 @@ public class FriendsService {
     }
 
     public Set<User> getUserFriends(long userId) {
-        return userStorage.getUserFriends(userId).stream().map(userStorage::getUserById)
-            .collect(Collectors.toSet());
+        return userStorage.getUserFriends(userId).stream()
+            .flatMap(id -> userStorage.getUserById(id).stream()).collect(Collectors.toSet());
     }
 
     public Set<User> getCommonFriends(long userId1, long userId2) {
-        return userStorage.getCommonFriends(userId1, userId2).stream().map(userStorage::getUserById)
-            .collect(Collectors.toSet());
+        return userStorage.getCommonFriends(userId1, userId2).stream()
+            .flatMap(id -> userStorage.getUserById(id).stream()).collect(Collectors.toSet());
     }
 }
