@@ -1,73 +1,64 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.ErrorMessage;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.ResponseBody;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@RequiredArgsConstructor
 @SuppressWarnings("unused")
 public class FilmController {
 
-    private final Map<Long, Film> films = new HashMap<>();
-    private long currentId = 1L;
+    private final FilmService filmService;
 
     @GetMapping
     public ResponseEntity<Collection<Film>> getAllFilms() {
         log.info("Request to get all films received.");
-        return ResponseEntity.ok(films.values());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+            .body(filmService.getAllFilms());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Film> getFilmById(@PathVariable long id) {
+        log.info("Request to get film with ID {} received.", id);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+            .body(filmService.getFilmById(id));
     }
 
     @PostMapping
-    public ResponseEntity<ResponseBody> create(@Valid @RequestBody Film newFilm,
-        BindingResult result) {
+    public ResponseEntity<Film> create(@RequestBody Film newFilm) {
         log.info("Request to create new film received: {}", newFilm);
-        if (result.hasErrors()) {
-            ErrorMessage errorMessage = new ErrorMessage(
-                result.getAllErrors().getFirst().getDefaultMessage());
-            log.warn("Validation error for creating new film: {}", errorMessage.getMessage());
-            return ResponseEntity.badRequest().body(errorMessage);
-        }
-        newFilm.setId(currentId++);
-        log.debug("Assigned ID: {}", currentId - 1);
-        films.put(newFilm.getId(), newFilm);
-        log.info("New film created with ID {}", newFilm.getId());
-        return new ResponseEntity<>(newFilm, HttpStatus.CREATED);
+        Film createdFilm = filmService.addFilm(newFilm);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+            .buildAndExpand(createdFilm.getId()).toUri();
+        log.info("New film created with ID {}", createdFilm.getId());
+        return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON)
+            .body(createdFilm);
     }
 
     @PutMapping
-    public ResponseEntity<ResponseBody> update(@Valid @RequestBody Film newFilm,
-        BindingResult result) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Film> update(@RequestBody Film newFilm) {
         log.info("Request to update film received: {}", newFilm);
-        if (films.get(newFilm.getId()) == null) {
-            log.warn("Film with ID {} not found for updating", newFilm.getId());
-            ErrorMessage errorMessage = new ErrorMessage(
-                String.format("Film with ID %d not found for updating", newFilm.getId()));
-            return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
-        }
-        if (result.hasErrors()) {
-            ErrorMessage errorMessage = new ErrorMessage(
-                result.getAllErrors().getFirst().getDefaultMessage());
-            log.warn("Validation error for updating film: {}", errorMessage.getMessage());
-            return ResponseEntity.badRequest().body(errorMessage);
-        }
-        films.put(newFilm.getId(), newFilm);
+        filmService.updateFilm(newFilm);
         log.info("Film with ID {} updated", newFilm.getId());
-        return ResponseEntity.ok(newFilm);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(newFilm);
     }
 }
