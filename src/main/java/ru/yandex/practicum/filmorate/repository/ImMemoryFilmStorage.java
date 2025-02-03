@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.repository;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,8 @@ public class ImMemoryFilmStorage implements FilmStorage {
     private final AtomicLong nextId = new AtomicLong(0);
 
     @Override
-    public Film getFilmById(long id) {
-        return films.get(id);
+    public Optional<Film> getFilmById(long id) {
+        return Optional.ofNullable(films.get(id));
     }
 
     @Override
@@ -26,6 +27,11 @@ public class ImMemoryFilmStorage implements FilmStorage {
         film.setId(nextId.getAndIncrement());
         films.put(film.getId(), film);
         return film.getId();
+    }
+
+    @Override
+    public void updateFilm(Film film) {
+        films.put(film.getId(), film);
     }
 
     @Override

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.repository;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Component;
@@ -17,8 +18,8 @@ public class InMemoryUserStorage implements UserStorage {
     private final AtomicLong nextId = new AtomicLong(0);
 
     @Override
-    public User getUserById(long id) {
-        return users.get(id);
+    public Optional<User> getUserById(long id) {
+        return Optional.ofNullable(users.get(id));
     }
 
     @Override
@@ -26,6 +27,11 @@ public class InMemoryUserStorage implements UserStorage {
         user.setId(nextId.getAndIncrement());
         users.put(user.getId(), user);
         return user.getId();
+    }
+
+    @Override
+    public void updateUser(User user) {
+        users.put(user.getId(), user);
     }
 
     @Override
@@ -57,6 +63,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void deleteFriend(long userId, long friendId) {
         userFriends.get(userId).remove(friendId);
+        userFriends.get(friendId).remove(userId);
     }
 
     @Override
