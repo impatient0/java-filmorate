@@ -26,7 +26,7 @@ public class LikesService {
     public List<Film> getPopularFilms(int count) {
         return filmStorage.getAllFilms().keySet().stream()
             .sorted(Comparator.comparing(filmId -> filmStorage.getUsersWhoLikedFilm(filmId).size()))
-            .limit(count).map(filmStorage::getFilmById).toList();
+            .limit(count).flatMap(id -> filmStorage.getFilmById(id).stream()).toList();
     }
 
 }
