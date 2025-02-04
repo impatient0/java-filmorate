@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.service.LikesService;
 
 @RestController
-@RequestMapping("/films/{id}/likes/{userId")
+@RequestMapping("/films/{id}/likes/{userId}")
 @RequiredArgsConstructor
 @Slf4j
 @SuppressWarnings("unused")

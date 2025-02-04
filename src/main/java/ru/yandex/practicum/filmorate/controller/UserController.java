@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import ru.yandex.practicum.filmorate.model.ResponseBody;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -47,7 +44,6 @@ public class UserController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<User> create(@RequestBody User newUser) {
         log.info("Request to create new user received: {}", newUser);
         User createdUser = userService.addUser(newUser);
@@ -58,7 +54,7 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<ResponseBody> update(@RequestBody User newUser) {
+    public ResponseEntity<User> update(@RequestBody User newUser) {
         log.info("Request to update user received: {}", newUser);
         userService.updateUser(newUser);
         log.info("User with ID {} updated", newUser.getId());
