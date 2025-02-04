@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
         log.warn("Encountered {}: returning 400 Bad Request. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
         ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),
-            "Invalid film data:" + e.getValidationMessage());
+            "Invalid film data: " + e.getValidationMessage());
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON)
             .body(errorMessage);
     }
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
         log.warn("Encountered {}: returning 400 Bad Request. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
         ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),
-            "Invalid user data:" + e.getValidationMessage());
+            "Invalid user data: " + e.getValidationMessage());
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON)
             .body(errorMessage);
     }

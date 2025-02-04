@@ -16,7 +16,7 @@ public class ImMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
     private final UserStorage userStorage;
-    private final AtomicLong nextId = new AtomicLong(0);
+    private final AtomicLong nextId = new AtomicLong(1);
 
     @Override
     public Optional<Film> getFilmById(long id) {

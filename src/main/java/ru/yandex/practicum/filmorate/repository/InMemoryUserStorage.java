@@ -16,7 +16,7 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
     private final Map<Long, Set<Long>> userLikedFilms = new HashMap<>();
     private final Map<Long, Set<Long>> userFriends = new HashMap<>();
-    private final AtomicLong nextId = new AtomicLong(0);
+    private final AtomicLong nextId = new AtomicLong(1);
 
     @Override
     public Optional<User> getUserById(long id) {
