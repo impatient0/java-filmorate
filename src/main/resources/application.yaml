@@ -1,0 +1,4 @@
+logging.level:
+  org.zalando.logbook: INFO
+  ru.yandex.practicum.filmorate: DEBUG
+
