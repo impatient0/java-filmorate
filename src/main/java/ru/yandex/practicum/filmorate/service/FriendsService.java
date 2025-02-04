@@ -39,6 +39,10 @@ public class FriendsService {
             log.warn("Removing friendship failed: user with ID {} not found", userId);
             throw new UserNotFoundException("Error when removing friendship", userId);
         }
+        if (userStorage.getUserById(friendId).isEmpty()) {
+            log.warn("Removing friendship failed: friend with ID {} not found", friendId);
+            throw new UserNotFoundException("Error when removing friendship", friendId);
+        }
         log.debug("Removing friendship between users {} and {}", userId, friendId);
         userStorage.deleteFriend(userId, friendId);
     }

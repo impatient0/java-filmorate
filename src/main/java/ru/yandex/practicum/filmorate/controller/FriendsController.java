@@ -30,7 +30,7 @@ public class FriendsController {
             .body(friendsService.getUserFriends(id));
     }
 
-    @GetMapping("/{otherId}")
+    @GetMapping("/common/{otherId}")
     public ResponseEntity<Collection<User>> getCommonFriends(@PathVariable long id,
         @PathVariable long otherId) {
         log.info("Request to get common friends of user {} and {} received.", id, otherId);

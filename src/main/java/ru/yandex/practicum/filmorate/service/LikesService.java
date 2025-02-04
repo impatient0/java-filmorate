@@ -37,6 +37,10 @@ public class LikesService {
             log.warn("Unliking film failed: user with ID {} not found", userId);
             throw new UserNotFoundException("Error when unliking film", userId);
         }
+        if (filmStorage.getFilmById(filmId).isEmpty()) {
+            log.warn("Unliking film failed: film with ID {} not found", filmId);
+            throw new FilmNotFoundException("Error when unliking film", filmId);
+        }
         log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
         userStorage.removeLike(userId, filmId);
     }
@@ -44,7 +48,8 @@ public class LikesService {
     public List<Film> getPopularFilms(int count) {
         log.debug("Getting {} most popular films", count);
         return filmStorage.getAllFilms().keySet().stream()
-            .sorted(Comparator.comparing(filmId -> filmStorage.getUsersWhoLikedFilm(filmId).size()))
+            .sorted(Comparator.comparing(
+                (Long filmId) -> filmStorage.getUsersWhoLikedFilm(filmId).size()).reversed())
             .limit(count).flatMap(id -> filmStorage.getFilmById(id).stream()).toList();
     }
 }
