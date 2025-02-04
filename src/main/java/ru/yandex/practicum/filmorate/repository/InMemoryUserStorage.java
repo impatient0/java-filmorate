@@ -27,6 +27,8 @@ public class InMemoryUserStorage implements UserStorage {
     public long addUser(User user) {
         user.setId(nextId.getAndIncrement());
         users.put(user.getId(), user);
+        userLikedFilms.put(user.getId(), new HashSet<>());
+        userFriends.put(user.getId(), new HashSet<>());
         return user.getId();
     }
 
@@ -57,8 +59,8 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(long userId, long friendId) {
-        userFriends.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
-        userFriends.computeIfAbsent(friendId, k -> new HashSet<>()).add(userId);
+        userFriends.get(userId).add(friendId);
+        userFriends.get(friendId).add(userId);
     }
 
     @Override
