@@ -42,6 +42,10 @@ public class UserService {
             throw new UserValidationException("Error when creating new user",
                 violations.iterator().next().getMessage());
         }
+        if (user.getName() == null) {
+            log.debug("User had no name - setting it to login ('{}')", user.getLogin());
+            user.setName(user.getLogin());
+        }
         long userId = userStorage.addUser(user);
         user.setId(userId);
         log.debug("Adding new user {}", user);
