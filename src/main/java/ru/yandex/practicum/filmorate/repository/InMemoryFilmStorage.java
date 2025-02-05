@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 @Component
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
-public class ImMemoryFilmStorage implements FilmStorage {
+public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Long, Film> films = new HashMap<>();
     private final UserStorage userStorage;
