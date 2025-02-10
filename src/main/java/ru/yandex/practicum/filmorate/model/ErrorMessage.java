@@ -12,4 +12,6 @@ import lombok.Setter;
 public final class ErrorMessage implements ResponseBody {
 
     private String message;
+
+    private String description;
 }
