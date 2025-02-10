@@ -3,7 +3,7 @@
 DB schema:<br>
 (prettier verion available [here](https://drive.google.com/file/d/180JIfZNXEnq3Se4-3l66gs4mYytXpNV-/view?usp=sharing))
 
-```mermaid:
+```mermaid
 erDiagram
     users {
         BIGINT user_id PK
@@ -71,3 +71,4 @@ erDiagram
     genres {
         description TEXT
     }
+```
