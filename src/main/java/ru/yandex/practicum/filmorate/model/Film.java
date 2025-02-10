@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.LaterThan;
@@ -21,4 +22,6 @@ public non-sealed class Film implements ResponseBody {
     private String name;
     @Size(max = 200, message = "Film description must not exceed 200 characters.")
     private String description;
+    private MpaRating mpaRating;
+    private List<Genre> genres;
 }
