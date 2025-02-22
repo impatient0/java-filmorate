@@ -36,6 +36,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+		<dependency>
+			<artifactId>h2</artifactId>
+			<groupId>com.h2database</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+			<groupId>org.springframework.boot</groupId>
+		</dependency>
 	</dependencies>
 
 	<build>
