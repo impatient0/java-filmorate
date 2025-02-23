@@ -19,7 +19,7 @@ erDiagram
         TEXT description
         DATE release_date
         INTEGER duration
-        ENUM mpa_rating
+        VARCHAR mpa_rating
     }
 
     genres {
@@ -28,21 +28,18 @@ erDiagram
     }
 
     film_genres {
-        BIGINT id PK
         BIGINT film_id FK
         SMALLINT genre_id FK
     }
 
     friendships {
-        BIGINT friendship_id PK
         BIGINT user_id FK
         BIGINT friend_id FK
-        ENUM status
+        VARCHAR status
         TIMESTAMP created_at
     }
 
     likes {
-        BIGINT like_id PK
         BIGINT user_id FK
         BIGINT film_id FK
         TIMESTAMP created_at
@@ -54,23 +51,6 @@ erDiagram
     films ||--o{ likes : "likes"
     films ||--o{ film_genres : "film_genres"
     genres ||--o{ film_genres : "film_genres"
-
-    friendships {
-        status ENUM
-        TIMESTAMP created_at
-    }
-
-    likes {
-        TIMESTAMP created_at
-    }
-
-    film_genres {
-        id BIGINT
-    }
-
-    genres {
-        description TEXT
-    }
 ```
 ### Example queries
 - Get all films (without genres):
