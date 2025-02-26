@@ -11,12 +11,12 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 
 
-public abstract class DBBaseStorage<T> {
+public abstract class DbBaseStorage<T> {
 
     protected final JdbcTemplate jdbc;
     protected final RowMapper<T> mapper;
 
-    protected DBBaseStorage(JdbcTemplate jdbc, RowMapper<T> mapper) {
+    protected DbBaseStorage(JdbcTemplate jdbc, RowMapper<T> mapper) {
         this.jdbc = jdbc;
         this.mapper = mapper;
     }

@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -14,7 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 @Repository
 @Primary
 @SuppressWarnings("unused")
-public class DBUserStorage extends DBBaseStorage<User> implements UserStorage {
+public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
 
     private static final String CHECK_EXISTS_QUERY =
         "SELECT EXISTS (SELECT 1 FROM users WHERE " + "user_id = ?)";
@@ -31,7 +29,7 @@ public class DBUserStorage extends DBBaseStorage<User> implements UserStorage {
     private static final String GET_LIKED_FILMS_QUERY = "SELECT f.film_id FROM films AS f RIGHT "
         + "JOIN likes AS l ON f.film_id = l.film_id WHERE l.user_id = ?";
 
-    public DBUserStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
+    public DbUserStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
 
@@ -41,26 +39,25 @@ public class DBUserStorage extends DBBaseStorage<User> implements UserStorage {
     }
 
     @Override
-    public Optional<User> getUserById(long id) {
-        return super.getSingle(GET_BY_ID_QUERY, id);
+    public Optional<User> getUserById(long userId) {
+        return getSingle(GET_BY_ID_QUERY, userId);
     }
 
     @Override
     public long addUser(User user) {
-        return super.insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(),
+        return insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(),
             user.getBirthday());
     }
 
     @Override
     public void updateUser(User user) {
-        super.update(UPDATE_QUERY, user.getEmail(), user.getLogin(), user.getName(),
+        update(UPDATE_QUERY, user.getEmail(), user.getLogin(), user.getName(),
             user.getBirthday(), user.getId());
     }
 
     @Override
-    public Map<Long, User> getAllUsers() {
-        return super.getMultiple(GET_ALL_QUERY).stream()
-            .collect(Collectors.toMap(User::getId, u -> u));
+    public Set<User> getAllUsers() {
+        return new HashSet<>(getMultiple(GET_ALL_QUERY));
     }
 
     @Override
@@ -71,11 +68,6 @@ public class DBUserStorage extends DBBaseStorage<User> implements UserStorage {
     @Override
     public void removeLike(long userId, long filmId) {
         jdbc.update(REMOVE_LIKE_QUERY, userId, filmId);
-    }
-
-    @Override
-    public Set<Long> getUserLikedFilms(long userId) {
-        return new HashSet<>(jdbc.queryForList(GET_LIKED_FILMS_QUERY, Long.class));
     }
 
 }

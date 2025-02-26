@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 @Repository
 @SuppressWarnings("unused")
-public class DBFriendshipStorage extends DBBaseStorage<User> implements FriendshipStorage {
+public class DbFriendshipStorage extends DbBaseStorage<User> implements FriendshipStorage {
 
     private static final RowMapper<FriendshipStatus> friendshipStatusRowMapper = (rs, rowNum) -> {
         String statusStr = rs.getString("status");
@@ -36,7 +36,7 @@ public class DBFriendshipStorage extends DBBaseStorage<User> implements Friendsh
         + "friendships f1 ON u.user_id = f1.friend_id AND f1.user_id = ? JOIN friendships f2 ON"
         + " u.user_id = f2.friend_id AND f2.user_id = ?";
 
-    public DBFriendshipStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
+    public DbFriendshipStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
 
