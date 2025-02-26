@@ -61,6 +61,6 @@ CREATE TABLE IF NOT EXISTS likes (
     FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE
 );
 
-INSERT INTO mpa_ratings (name) VALUES ('G'), ('PG'), ('PG_13'), ('R'), ('NC_17');
+INSERT INTO mpa_ratings (name) VALUES ('G'), ('PG'), ('PG-13'), ('R'), ('NC-17');
 
 INSERT INTO genres (name) VALUES ('Комедия'), ('Драма'), ('Мультфильм'), ('Триллер'), ('Документальный'), ('Боевик');
