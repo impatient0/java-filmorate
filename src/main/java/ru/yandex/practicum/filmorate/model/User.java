@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public non-sealed class User implements ResponseBody {
+public class User {
 
     long id;
     private String email;

@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.validation.LaterThan;
 
 @Data
 @NoArgsConstructor
-public non-sealed class Film implements ResponseBody {
+public class Film {
 
     long id;
     @LaterThan(value = "1895-12-28", message = "Release date must be after 1895-12-28.")
