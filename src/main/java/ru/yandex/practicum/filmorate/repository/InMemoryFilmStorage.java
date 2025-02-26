@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -19,8 +20,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final AtomicLong nextId = new AtomicLong(1);
 
     @Override
-    public Optional<Film> getFilmById(long id) {
-        return Optional.ofNullable(films.get(id));
+    public boolean checkFilmExists(long filmId) {
+        return films.containsKey(filmId);
+    }
+
+    @Override
+    public Optional<Film> getFilmById(long filmId) {
+        return Optional.ofNullable(films.get(filmId));
     }
 
     @Override
@@ -36,14 +42,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Map<Long, Film> getAllFilms() {
-        return new HashMap<>(films);
-    }
-
-    @Override
-    public Set<Long> getUsersWhoLikedFilm(long filmId) {
-        return userStorage.getAllUsers().keySet().stream()
-            .filter(userId -> userStorage.getUserLikedFilms(userId).contains(filmId))
-            .collect(java.util.stream.Collectors.toSet());
+    public Set<Film> getAllFilms() {
+        return new HashSet<>(films.values());
     }
 }

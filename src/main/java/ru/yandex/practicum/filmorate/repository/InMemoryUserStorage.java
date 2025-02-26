@@ -19,13 +19,13 @@ public class InMemoryUserStorage implements UserStorage {
     private final AtomicLong nextId = new AtomicLong(1);
 
     @Override
-    public boolean checkUserExists(long id) {
-        return users.containsKey(id);
+    public boolean checkUserExists(long userId) {
+        return users.containsKey(userId);
     }
 
     @Override
-    public Optional<User> getUserById(long id) {
-        return Optional.ofNullable(users.get(id));
+    public Optional<User> getUserById(long userId) {
+        return Optional.ofNullable(users.get(userId));
     }
 
     @Override
@@ -43,8 +43,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Map<Long, User> getAllUsers() {
-        return new HashMap<>(users);
+    public Set<User> getAllUsers() {
+        return new HashSet<>(users.values());
     }
 
     @Override
@@ -55,11 +55,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void removeLike(long userId, long filmId) {
         userLikedFilms.get(userId).remove(filmId);
-    }
-
-    @Override
-    public Set<Long> getUserLikedFilms(long userId) {
-        return userLikedFilms.getOrDefault(userId, new HashSet<>());
     }
 
     public void addFriend(long userId, long friendId) {

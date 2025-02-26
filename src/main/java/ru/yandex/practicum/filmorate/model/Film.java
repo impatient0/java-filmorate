@@ -22,6 +22,6 @@ public class Film {
     private String name;
     @Size(max = 200, message = "Film description must not exceed 200 characters.")
     private String description;
-    private MpaRating mpaRating;
+    private MpaRating mpa;
     private List<Genre> genres;
 }
