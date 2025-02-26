@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -36,8 +36,8 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         "INSERT INTO film_genres (film_id, genre_id)" + " VALUES (?, ?)";
     private static final String DELETE_GENRES_QUERY = "DELETE FROM film_genres WHERE film_id = ?";
     private static final String UPDATE_QUERY =
-        "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? "
-            + "WHERE film_id = ?";
+        "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, "
+            + "mpa_rating_id = ? " + "WHERE film_id = ?";
 
     private final ResultSetExtractor<List<Film>> extractor;
 
@@ -83,8 +83,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Set<Film> getAllFilms() {
-        List<Film> resultList = jdbc.query(GET_ALL_QUERY, extractor);
-        return Set.copyOf(resultList);
+    public Collection<Film> getAllFilms() {
+        return jdbc.query(GET_ALL_QUERY, extractor);
     }
 }

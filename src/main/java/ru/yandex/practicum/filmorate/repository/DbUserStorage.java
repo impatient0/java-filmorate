@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,14 +16,14 @@ public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
 
     private static final String CHECK_EXISTS_QUERY =
         "SELECT EXISTS (SELECT 1 FROM users WHERE " + "user_id = ?)";
-    private static final String GET_ALL_QUERY = "SELECT * FROM users";
+    private static final String GET_ALL_QUERY = "SELECT * FROM users ORDER BY user_id";
     private static final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
     private static final String INSERT_QUERY =
         "INSERT INTO users (email, login, name, birthday) " + "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
         "UPDATE users SET email = ?, login = ?, name = ?, " + "birthday = ? WHERE user_id = ?";
     private static final String ADD_LIKE_QUERY =
-        "INSERT INTO likes (user_id, like_id, liked_at) " + "VALUES (?, ?, CURRENT_TIMESTAMP)";
+        "INSERT INTO likes (user_id, film_id, liked_at) " + "VALUES (?, ?, CURRENT_TIMESTAMP)";
     private static final String REMOVE_LIKE_QUERY =
         "DELETE FROM likes WHERE user_id = ? AND " + "film_id = ?";
     private static final String GET_LIKED_FILMS_QUERY = "SELECT f.film_id FROM films AS f RIGHT "
@@ -51,13 +51,13 @@ public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
 
     @Override
     public void updateUser(User user) {
-        update(UPDATE_QUERY, user.getEmail(), user.getLogin(), user.getName(),
-            user.getBirthday(), user.getId());
+        update(UPDATE_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(),
+            user.getId());
     }
 
     @Override
-    public Set<User> getAllUsers() {
-        return new HashSet<>(getMultiple(GET_ALL_QUERY));
+    public Collection<User> getAllUsers() {
+        return new ArrayList<>(getMultiple(GET_ALL_QUERY));
     }
 
     @Override
