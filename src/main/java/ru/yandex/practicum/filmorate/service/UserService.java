@@ -28,8 +28,8 @@ public class UserService {
     private final UserMapper mapper;
 
     public Collection<UserDto> getAllUsers() {
-        return userStorage.getAllUsers().values().stream().map(mapper::mapToUserDto)
-            .collect(Collectors.toSet());
+        return userStorage.getAllUsers().stream().map(mapper::mapToUserDto)
+            .collect(Collectors.toList());
     }
 
     public UserDto getUserById(long id) {
