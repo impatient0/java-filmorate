@@ -3,7 +3,8 @@ package ru.yandex.practicum.filmorate.repository.mappers;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -14,11 +15,11 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 
 @Component
 @SuppressWarnings("unused")
-public class FilmWithGenresRowMapper implements ResultSetExtractor<List<Film>> {
+public class FilmWithGenresDataMapper implements ResultSetExtractor<List<Film>> {
 
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {
-        Map<Long, Film> filmMap = new HashMap<>();
+        Map<Long, Film> filmMap = new LinkedHashMap<>();
         while (rs.next()) {
             long filmId = rs.getLong("film_id");
             Film film = filmMap.get(filmId);
@@ -37,7 +38,7 @@ public class FilmWithGenresRowMapper implements ResultSetExtractor<List<Film>> {
                 } else {
                     film.setMpa(mpaRating);
                 }
-                film.setGenres(new ArrayList<>());
+                film.setGenres(new HashSet<>());
                 filmMap.put(filmId, film);
             }
             int genreId = rs.getInt("genre_id");
