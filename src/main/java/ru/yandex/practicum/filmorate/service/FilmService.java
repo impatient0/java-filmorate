@@ -14,9 +14,14 @@ import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
+import ru.yandex.practicum.filmorate.exception.InvalidGenreException;
+import ru.yandex.practicum.filmorate.exception.InvalidMpaRatingException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapperImpl;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.GenreStorage;
+import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +29,8 @@ import ru.yandex.practicum.filmorate.repository.FilmStorage;
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final MpaRatingStorage mpaRatingStorage;
+    private final GenreStorage genreStorage;
     private final Validator validator;
     private final FilmMapperImpl mapper;
 
@@ -50,6 +57,15 @@ public class FilmService {
             log.warn("Adding film failed: {}", violationMessage);
             throw new FilmValidationException("Error when creating new film", violationMessage);
         }
+        if (!mpaRatingStorage.checkRatingExists(newFilmRequest.getMpa().getId())) {
+            throw new InvalidMpaRatingException("Error when creating new film",
+                newFilmRequest.getMpa().getId());
+        }
+        for (Genre genre : newFilmRequest.getGenres()) {
+            if (!genreStorage.checkGenreExists(genre.getId())) {
+                throw new InvalidGenreException("Error when creating new film", genre.getId());
+            }
+        }
         Film film = mapper.mapToFilmModel(newFilmRequest);
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
@@ -67,6 +83,18 @@ public class FilmService {
             String violationMessage = violations.iterator().next().getMessage();
             log.warn("Updating film failed: {}", violationMessage);
             throw new FilmValidationException("Error when updating film", violationMessage);
+        }
+        if (updateFilmRequest.getMpa() != null && !mpaRatingStorage.checkRatingExists(
+            updateFilmRequest.getMpa().getId())) {
+            throw new InvalidMpaRatingException("Error when updating film",
+                updateFilmRequest.getMpa().getId());
+        }
+        if (updateFilmRequest.getGenres() != null) {
+            for (Genre genre : updateFilmRequest.getGenres()) {
+                if (!genreStorage.checkGenreExists(genre.getId())) {
+                    throw new InvalidGenreException("Error when updating film", genre.getId());
+                }
+            }
         }
         log.debug("Updating film with ID {}: {}", film.getId(), film);
         film = mapper.updateFilmFields(film, updateFilmRequest);

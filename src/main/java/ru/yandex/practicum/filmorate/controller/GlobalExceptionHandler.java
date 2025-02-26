@@ -10,6 +10,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
+import ru.yandex.practicum.filmorate.exception.InvalidGenreException;
+import ru.yandex.practicum.filmorate.exception.InvalidMpaRatingException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserValidationException;
 
@@ -24,6 +26,27 @@ public class GlobalExceptionHandler {
             e.getClass().getSimpleName(), e.getMessage());
         ErrorMessage errorMessage = new ErrorMessage("Internal server error.", null);
         return ResponseEntity.internalServerError().contentType(MediaType.APPLICATION_JSON)
+            .body(errorMessage);
+    }
+
+    @ExceptionHandler(InvalidGenreException.class)
+    public ResponseEntity<ErrorMessage> handleInvalidGenreException(final InvalidGenreException e) {
+        log.warn("Encountered {}: returning 404 Not Found. Message: {}",
+            e.getClass().getSimpleName(), e.getMessage());
+        ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),
+            String.format("Genre with ID %d not found", e.getId()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON)
+            .body(errorMessage);
+    }
+
+    @ExceptionHandler(InvalidMpaRatingException.class)
+    public ResponseEntity<ErrorMessage> handleInvalidMpaRatingException(
+        final InvalidMpaRatingException e) {
+        log.warn("Encountered {}: returning 404 Not Found. Message: {}",
+            e.getClass().getSimpleName(), e.getMessage());
+        ErrorMessage errorMessage = new ErrorMessage(e.getMessage(),
+            String.format("MPA rating with ID %d not found", e.getId()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON)
             .body(errorMessage);
     }
 
