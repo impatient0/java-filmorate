@@ -19,6 +19,11 @@ public class InMemoryUserStorage implements UserStorage {
     private final AtomicLong nextId = new AtomicLong(1);
 
     @Override
+    public boolean checkUserExists(long id) {
+        return users.containsKey(id);
+    }
+
+    @Override
     public Optional<User> getUserById(long id) {
         return Optional.ofNullable(users.get(id));
     }
@@ -57,24 +62,20 @@ public class InMemoryUserStorage implements UserStorage {
         return userLikedFilms.getOrDefault(userId, new HashSet<>());
     }
 
-    @Override
     public void addFriend(long userId, long friendId) {
         userFriends.get(userId).add(friendId);
         userFriends.get(friendId).add(userId);
     }
 
-    @Override
     public void deleteFriend(long userId, long friendId) {
         userFriends.get(userId).remove(friendId);
         userFriends.get(friendId).remove(userId);
     }
 
-    @Override
     public Set<Long> getUserFriends(long userId) {
         return userFriends.getOrDefault(userId, new HashSet<>());
     }
 
-    @Override
     public Set<Long> getCommonFriends(long userId1, long userId2) {
         Set<Long> friends1 = getUserFriends(userId1);
         Set<Long> friends2 = getUserFriends(userId2);

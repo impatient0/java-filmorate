@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.model.User;
 
 public interface UserStorage {
 
+    boolean checkUserExists(long id);
+
     Optional<User> getUserById(long id);
 
     long addUser(User user);
@@ -20,12 +22,4 @@ public interface UserStorage {
     void removeLike(long userId, long filmId);
 
     Set<Long> getUserLikedFilms(long userId);
-
-    void addFriend(long userId, long friendId);
-
-    void deleteFriend(long userId, long friendId);
-
-    Set<Long> getUserFriends(long userId);
-
-    Set<Long> getCommonFriends(long userId1, long userId2);
 }
