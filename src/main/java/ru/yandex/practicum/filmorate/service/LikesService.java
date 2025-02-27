@@ -1,14 +1,16 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.LikesStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 @Service
@@ -18,6 +20,8 @@ public class LikesService {
 
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final LikesStorage likesStorage;
+    private final FilmMapper filmMapper;
 
     public void likeFilm(long userId, long filmId) {
         if (userStorage.getUserById(userId).isEmpty()) {
@@ -29,7 +33,7 @@ public class LikesService {
             throw new FilmNotFoundException("Error when liking film", filmId);
         }
         log.debug("User with ID {} likes film with ID {}", userId, filmId);
-        userStorage.addLike(userId, filmId);
+        likesStorage.addLike(userId, filmId);
     }
 
     public void unlikeFilm(long userId, long filmId) {
@@ -42,14 +46,12 @@ public class LikesService {
             throw new FilmNotFoundException("Error when unliking film", filmId);
         }
         log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
-        userStorage.removeLike(userId, filmId);
+        likesStorage.removeLike(userId, filmId);
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public List<FilmDto> getPopularFilms(int count) {
         log.debug("Getting {} most popular films", count);
-        return filmStorage.getAllFilms().keySet().stream()
-            .sorted(Comparator.comparing(
-                (Long filmId) -> filmStorage.getUsersWhoLikedFilm(filmId).size()).reversed())
-            .limit(count).flatMap(id -> filmStorage.getFilmById(id).stream()).toList();
+        return likesStorage.getPopularFilms(count).stream().map(filmMapper::mapToFilmDto)
+            .collect(Collectors.toList());
     }
 }

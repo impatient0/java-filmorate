@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.User;
 public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
-    private final Map<Long, Set<Long>> userLikedFilms = new HashMap<>();
     private final Map<Long, Set<Long>> userFriends = new HashMap<>();
     private final AtomicLong nextId = new AtomicLong(1);
 
@@ -32,7 +31,6 @@ public class InMemoryUserStorage implements UserStorage {
     public long addUser(User user) {
         user.setId(nextId.getAndIncrement());
         users.put(user.getId(), user);
-        userLikedFilms.put(user.getId(), new HashSet<>());
         userFriends.put(user.getId(), new HashSet<>());
         return user.getId();
     }
@@ -45,16 +43,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Set<User> getAllUsers() {
         return new HashSet<>(users.values());
-    }
-
-    @Override
-    public void addLike(long userId, long filmId) {
-        userLikedFilms.computeIfAbsent(userId, k -> new HashSet<>()).add(filmId);
-    }
-
-    @Override
-    public void removeLike(long userId, long filmId) {
-        userLikedFilms.get(userId).remove(filmId);
     }
 
     public void addFriend(long userId, long friendId) {

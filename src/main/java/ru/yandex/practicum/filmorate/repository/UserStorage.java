@@ -15,8 +15,4 @@ public interface UserStorage {
     void updateUser(User user);
 
     Collection<User> getAllUsers();
-
-    void addLike(long userId, long filmId);
-
-    void removeLike(long userId, long filmId);
 }

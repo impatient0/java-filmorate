@@ -60,14 +60,4 @@ public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
         return new ArrayList<>(getMultiple(GET_ALL_QUERY));
     }
 
-    @Override
-    public void addLike(long userId, long filmId) {
-        jdbc.update(ADD_LIKE_QUERY, userId, filmId);
-    }
-
-    @Override
-    public void removeLike(long userId, long filmId) {
-        jdbc.update(REMOVE_LIKE_QUERY, userId, filmId);
-    }
-
 }
