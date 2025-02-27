@@ -26,7 +26,7 @@ import ru.yandex.practicum.filmorate.repository.mappers.FilmWithGenresDataMapper
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({DbFilmStorage.class, FilmWithGenresDataMapper.class})
-class FilmorateFilmTests {
+class DbFilmStorageTest {
 
     private static final String DELETE_FILMS_QUERY = "DELETE FROM films";
     private static final String DELETE_FILM_GENRES_QUERY = "DELETE FROM film_genres";
