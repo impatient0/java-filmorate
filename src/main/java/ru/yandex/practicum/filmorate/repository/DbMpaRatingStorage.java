@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -14,7 +13,7 @@ public class DbMpaRatingStorage extends DbBaseStorage<MpaRating> implements MpaR
 
     private static final String CHECK_EXISTS_QUERY =
         "SELECT EXISTS (SELECT 1 FROM mpa_ratings " + "WHERE mpa_id = ?)";
-    private static final String GET_ALL_QUERY = "SELECT * FROM mpa_ratings";
+    private static final String GET_ALL_QUERY = "SELECT * FROM mpa_ratings ORDER BY mpa_id";
     private static final String GET_BY_ID_QUERY = "SELECT * FROM mpa_ratings WHERE mpa_id = ?";
 
     public DbMpaRatingStorage(JdbcTemplate jdbc, RowMapper<MpaRating> mapper) {
@@ -22,18 +21,18 @@ public class DbMpaRatingStorage extends DbBaseStorage<MpaRating> implements MpaR
     }
 
     @Override
-    public boolean checkRatingExists(long ratingId) {
+    public boolean checkMpaRatingExists(long ratingId) {
         return Boolean.TRUE.equals(
             jdbc.queryForObject(CHECK_EXISTS_QUERY, Boolean.class, ratingId));
     }
 
     @Override
-    public Optional<MpaRating> getRatingById(long ratingId) {
+    public Optional<MpaRating> getMpaRatingById(long ratingId) {
         return getSingle(GET_BY_ID_QUERY, ratingId);
     }
 
     @Override
-    public Collection<MpaRating> getAllRatings() {
-        return List.of();
+    public Collection<MpaRating> getAllMpaRatings() {
+        return jdbc.query(GET_ALL_QUERY, mapper);
     }
 }

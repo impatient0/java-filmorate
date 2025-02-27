@@ -57,7 +57,7 @@ public class FilmService {
             log.warn("Adding film failed: {}", violationMessage);
             throw new FilmValidationException("Error when creating new film", violationMessage);
         }
-        if (!mpaRatingStorage.checkRatingExists(newFilmRequest.getMpa().getId())) {
+        if (!mpaRatingStorage.checkMpaRatingExists(newFilmRequest.getMpa().getId())) {
             throw new InvalidMpaRatingException("Error when creating new film",
                 newFilmRequest.getMpa().getId());
         }
@@ -84,7 +84,7 @@ public class FilmService {
             log.warn("Updating film failed: {}", violationMessage);
             throw new FilmValidationException("Error when updating film", violationMessage);
         }
-        if (updateFilmRequest.getMpa() != null && !mpaRatingStorage.checkRatingExists(
+        if (updateFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
             updateFilmRequest.getMpa().getId())) {
             throw new InvalidMpaRatingException("Error when updating film",
                 updateFilmRequest.getMpa().getId());

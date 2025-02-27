@@ -8,10 +8,10 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 @Component
 public interface MpaRatingStorage {
 
-    boolean checkRatingExists(long ratingId);
+    boolean checkMpaRatingExists(long ratingId);
 
-    Optional<MpaRating> getRatingById(long ratingId);
+    Optional<MpaRating> getMpaRatingById(long ratingId);
 
-    Collection<MpaRating> getAllRatings();
+    Collection<MpaRating> getAllMpaRatings();
 
 }
