@@ -47,7 +47,7 @@ public class DbFriendshipStorage extends DbBaseStorage<User> implements Friendsh
                 friendshipStatusRowMapper, userId, friendId);
             return Optional.ofNullable(status);
         } catch (DataAccessException e) {
-            return Optional.empty(); // No friendship record found in this direction
+            return Optional.empty();
         }
     }
 
