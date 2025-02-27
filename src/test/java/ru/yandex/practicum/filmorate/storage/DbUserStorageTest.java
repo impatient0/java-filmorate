@@ -26,8 +26,8 @@ class DbUserStorageTest {
 
     private static final String DELETE_QUERY = "DELETE FROM users";
     private static final String CHECK_USER_QUERY =
-        "SELECT EXISTS (SELECT 1 FROM users WHERE user_id = ? AND email = 'test@example.com' AND "
-            + "login = 'testlogin' AND name = 'Test User' AND birthday" + " = '2000-01-01')";
+        "SELECT EXISTS (SELECT 1 FROM users WHERE user_id = ? AND email = ? AND "
+            + "login = ? AND name = ? AND birthday" + " = ?)";
 
     private final DbUserStorage userStorage;
     private final JdbcTemplate jdbc;
@@ -42,61 +42,58 @@ class DbUserStorageTest {
         jdbc.execute(DELETE_QUERY);
     }
 
+    private User createUser(String email, String login, String name, LocalDate birthday) {
+        User user = new User();
+        user.setEmail(email);
+        user.setLogin(login);
+        user.setName(name);
+        user.setBirthday(birthday);
+        long userId = userStorage.addUser(user);
+        user.setId(userId);
+        return user;
+    }
+
     @Test
     void testAddUser() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setName("Test User");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
-
-        long userId = userStorage.addUser(user);
-
+        User user = createUser("test@example.com", "testlogin", "Test User",
+            LocalDate.of(2000, 1, 1));
         assertThat(Boolean.TRUE.equals(
-            jdbc.queryForObject(CHECK_USER_QUERY, Boolean.class, userId))).isTrue();
+            jdbc.queryForObject(CHECK_USER_QUERY, Boolean.class, user.getId(), user.getEmail(),
+                user.getLogin(), user.getName(), user.getBirthday()))).isTrue();
     }
 
     @Test
     void testGetUserById() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setName("Test User");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
-        long userId = userStorage.addUser(user);
+        User user = createUser("test@example.com", "testlogin", "Test User",
+            LocalDate.of(2000, 1, 1));
 
-        Optional<User> userOptional = userStorage.getUserById(userId);
+        Optional<User> userOptional = userStorage.getUserById(user.getId());
 
         assertThat(userOptional).isPresent().hasValueSatisfying(retrievedUser -> {
-            assertThat(retrievedUser).hasFieldOrPropertyWithValue("id", userId);
-            assertThat(retrievedUser).hasFieldOrPropertyWithValue("email", "test@example.com");
-            assertThat(retrievedUser).hasFieldOrPropertyWithValue("login", "testlogin");
-            assertThat(retrievedUser).hasFieldOrPropertyWithValue("name", "Test User");
-            assertThat(retrievedUser).hasFieldOrPropertyWithValue("birthday",
-                LocalDate.of(2000, 1, 1));
+            assertThat(retrievedUser).hasFieldOrPropertyWithValue("id", user.getId());
+            assertThat(retrievedUser).hasFieldOrPropertyWithValue("email", user.getEmail());
+            assertThat(retrievedUser).hasFieldOrPropertyWithValue("login", user.getLogin());
+            assertThat(retrievedUser).hasFieldOrPropertyWithValue("name", user.getName());
+            assertThat(retrievedUser).hasFieldOrPropertyWithValue("birthday", user.getBirthday());
         });
     }
 
     @Test
     void testUpdateUser() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setName("Test User");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
-        long userId = userStorage.addUser(user);
+        User user = createUser("test@example.com", "testlogin", "Test User",
+            LocalDate.of(2000, 1, 1));
 
         User updatedUser = new User();
-        updatedUser.setId(userId);
+        updatedUser.setId(user.getId());
         updatedUser.setEmail("new@example.com");
         updatedUser.setLogin("newlogin");
         updatedUser.setName("New User");
         updatedUser.setBirthday(LocalDate.of(1999, 1, 1));
         userStorage.updateUser(updatedUser);
 
-        assertThat(userStorage.getUserById(userId)).isPresent()
+        assertThat(userStorage.getUserById(user.getId())).isPresent()
             .hasValueSatisfying(retrievedUser -> {
-                assertThat(retrievedUser).hasFieldOrPropertyWithValue("id", userId);
+                assertThat(retrievedUser).hasFieldOrPropertyWithValue("id", user.getId());
                 assertThat(retrievedUser).hasFieldOrPropertyWithValue("email", "new@example.com");
                 assertThat(retrievedUser).hasFieldOrPropertyWithValue("login", "newlogin");
                 assertThat(retrievedUser).hasFieldOrPropertyWithValue("name", "New User");
@@ -107,21 +104,10 @@ class DbUserStorageTest {
 
     @Test
     void testGetAllUsers() {
-        User user1 = new User();
-        user1.setEmail("test1@example.com");
-        user1.setLogin("testlogin1");
-        user1.setName("Test User 1");
-        user1.setBirthday(LocalDate.of(2001, 1, 1));
-        long user1Id = userStorage.addUser(user1);
-        user1.setId(user1Id);
-
-        User user2 = new User();
-        user2.setEmail("test2@example.com");
-        user2.setLogin("testlogin2");
-        user2.setName("Test User 2");
-        user2.setBirthday(LocalDate.of(2002, 2, 2));
-        long user2Id = userStorage.addUser(user2);
-        user2.setId(user2Id);
+        User user1 = createUser("test1@example.com", "testlogin1", "Test User 1",
+            LocalDate.of(2001, 1, 1));
+        User user2 = createUser("test2@example.com", "testlogin2", "Test User 2",
+            LocalDate.of(2002, 2, 2));
 
         List<User> users = (List<User>) userStorage.getAllUsers();
         assertThat(users.size()).isEqualTo(2);
@@ -130,15 +116,10 @@ class DbUserStorageTest {
 
     @Test
     void testCheckUserExists() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setName("Test User");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
-        long userId = userStorage.addUser(user);
+        User user = createUser("test@example.com", "testlogin", "Test User",
+            LocalDate.of(2000, 1, 1));
 
-        assertThat(userStorage.checkUserExists(userId)).isTrue();
-        assertThat(userStorage.checkUserExists(userId + 42L)).isFalse();
+        assertThat(userStorage.checkUserExists(user.getId())).isTrue();
+        assertThat(userStorage.checkUserExists(user.getId() + 42L)).isFalse();
     }
-
 }

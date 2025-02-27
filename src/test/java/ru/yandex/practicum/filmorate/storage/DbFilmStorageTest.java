@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,18 +52,27 @@ class DbFilmStorageTest {
         jdbc.execute(DELETE_FILM_GENRES_QUERY);
     }
 
-    @Test
-    void testAddFilm() {
+    private Film createFilm(String name, String description, LocalDate releaseDate, int duration,
+        int mpaId, String mpaName) {
         Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Test Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
+        film.setName(name);
+        film.setDescription(description);
+        film.setReleaseDate(releaseDate);
+        film.setDuration(duration);
         MpaRating mpaRating = new MpaRating();
-        mpaRating.setId(1);
+        mpaRating.setId(mpaId);
+        mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
+        film.setGenres(new HashSet<>());
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
+        return film;
+    }
+
+    @Test
+    void testAddFilm() {
+        Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
+            "G");
 
         assertThat(Boolean.TRUE.equals(
             jdbc.queryForObject(CHECK_FILM_QUERY, Boolean.class, film.getId(), film.getName(),
@@ -74,22 +82,13 @@ class DbFilmStorageTest {
 
     @Test
     void testGetFilmById() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Test Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
-        MpaRating mpaRating = new MpaRating();
-        mpaRating.setId(1);
-        mpaRating.setName("G");
-        film.setMpa(mpaRating);
-        long filmId = filmStorage.addFilm(film);
-        film.setId(filmId);
+        Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
+            "G");
 
-        Optional<Film> filmOptional = filmStorage.getFilmById(filmId);
+        Optional<Film> filmOptional = filmStorage.getFilmById(film.getId());
 
         assertThat(filmOptional).isPresent().hasValueSatisfying(retrievedFilm -> {
-            assertThat(retrievedFilm).hasFieldOrPropertyWithValue("id", filmId);
+            assertThat(retrievedFilm).hasFieldOrPropertyWithValue("id", film.getId());
             assertThat(retrievedFilm).hasFieldOrPropertyWithValue("name", film.getName());
             assertThat(retrievedFilm).hasFieldOrPropertyWithValue("description",
                 film.getDescription());
@@ -102,26 +101,16 @@ class DbFilmStorageTest {
 
     @Test
     void testUpdateFilm() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Test Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
-        MpaRating mpaRating = new MpaRating();
-        mpaRating.setId(1);
-        film.setMpa(mpaRating);
-        mpaRating.setName("G");
-        film.setGenres(new HashSet<>());
-        long filmId = filmStorage.addFilm(film);
-        film.setId(filmId);
+        Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
+            "G");
         Genre genre = new Genre();
         genre.setId(1);
         genre.setName("Комедия");
         film.getGenres().add(genre);
-        jdbc.update(ADD_GENRE_QUERY, filmId, genre.getId());
+        jdbc.update(ADD_GENRE_QUERY, film.getId(), genre.getId());
 
         Film updatedFilm = new Film();
-        updatedFilm.setId(filmId);
+        updatedFilm.setId(film.getId());
         updatedFilm.setName("Updated Film");
         updatedFilm.setDescription("Updated Description");
         updatedFilm.setReleaseDate(LocalDate.of(1999, 1, 1));
@@ -135,55 +124,27 @@ class DbFilmStorageTest {
 
         filmStorage.updateFilm(updatedFilm);
 
-        Optional<Film> retrievedFilm = filmStorage.getFilmById(filmId);
+        Optional<Film> retrievedFilm = filmStorage.getFilmById(film.getId());
         assertThat(retrievedFilm).isPresent().get().isEqualTo(updatedFilm);
     }
 
     @Test
     void testCheckFilmExists() {
-        Film film = new Film();
-        film.setName("Test Film");
-        film.setDescription("Test Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
-        MpaRating mpaRating = new MpaRating();
-        mpaRating.setId(1);
-        mpaRating.setName("G");
-        film.setMpa(mpaRating);
-        long filmId = filmStorage.addFilm(film);
+        Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
+            "G");
 
-        assertThat(jdbc.queryForObject(CHECK_FILM_EXISTS_QUERY, Boolean.class, filmId)).isTrue();
         assertThat(
-            jdbc.queryForObject(CHECK_FILM_EXISTS_QUERY, Boolean.class, filmId + 42L)).isFalse();
+            jdbc.queryForObject(CHECK_FILM_EXISTS_QUERY, Boolean.class, film.getId())).isTrue();
+        assertThat(jdbc.queryForObject(CHECK_FILM_EXISTS_QUERY, Boolean.class,
+            film.getId() + 42L)).isFalse();
     }
 
     @Test
     void testGetAllFilms() {
-        Film film1 = new Film();
-        film1.setName("Test Film 1");
-        film1.setDescription("Test Description 1");
-        film1.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film1.setDuration(120);
-        MpaRating mpaRating1 = new MpaRating();
-        mpaRating1.setId(1);
-        mpaRating1.setName("G");
-        film1.setMpa(mpaRating1);
-        film1.setGenres(Set.of());
-        long film1Id = filmStorage.addFilm(film1);
-        film1.setId(film1Id);
-
-        Film film2 = new Film();
-        film2.setName("Test Film 2");
-        film2.setDescription("Test Description 2");
-        film2.setReleaseDate(LocalDate.of(2001, 2, 2));
-        film2.setDuration(150);
-        MpaRating mpaRating2 = new MpaRating();
-        mpaRating2.setId(2);
-        mpaRating2.setName("PG");
-        film2.setMpa(mpaRating2);
-        film2.setGenres(Set.of());
-        long film2Id = filmStorage.addFilm(film2);
-        film2.setId(film2Id);
+        Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
+            1, "G");
+        Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
+            2, "PG");
 
         Collection<Film> films = filmStorage.getAllFilms();
         assertThat(films.size()).isEqualTo(2);
