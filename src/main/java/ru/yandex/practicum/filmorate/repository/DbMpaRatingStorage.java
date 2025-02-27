@@ -33,6 +33,6 @@ public class DbMpaRatingStorage extends DbBaseStorage<MpaRating> implements MpaR
 
     @Override
     public Collection<MpaRating> getAllMpaRatings() {
-        return jdbc.query(GET_ALL_QUERY, mapper);
+        return getMultiple(GET_ALL_QUERY);
     }
 }

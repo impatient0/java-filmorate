@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -14,7 +13,7 @@ public class DbGenreStorage extends DbBaseStorage<Genre> implements GenreStorage
 
     private static final String CHECK_EXISTS_QUERY =
         "SELECT EXISTS (SELECT 1 FROM genres WHERE " + "genre_id = ?)";
-    private static final String GET_ALL_QUERY = "SELECT * FROM genres";
+    private static final String GET_ALL_QUERY = "SELECT * FROM genres ORDER BY genre_id";
     private static final String GET_BY_ID_QUERY = "SELECT * FROM genres WHERE genre_id = ?";
 
     protected DbGenreStorage(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
@@ -29,13 +28,12 @@ public class DbGenreStorage extends DbBaseStorage<Genre> implements GenreStorage
 
     @Override
     public Optional<Genre> getGenreDyId(long genreId) {
-        List<Genre> genres = jdbc.query(GET_BY_ID_QUERY, mapper, genreId);
-        return genres.isEmpty() ? Optional.empty() : Optional.of(genres.getFirst());
+        return getSingle(GET_BY_ID_QUERY, genreId);
     }
 
     @Override
     public Collection<Genre> getAllGenres() {
-        return jdbc.query(GET_ALL_QUERY, mapper);
+        return getMultiple(GET_ALL_QUERY);
     }
 
 }
