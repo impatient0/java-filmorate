@@ -27,7 +27,7 @@ public class DbGenreStorage extends DbBaseStorage<Genre> implements GenreStorage
     }
 
     @Override
-    public Optional<Genre> getGenreDyId(long genreId) {
+    public Optional<Genre> getGenreById(long genreId) {
         return getSingle(GET_BY_ID_QUERY, genreId);
     }
 

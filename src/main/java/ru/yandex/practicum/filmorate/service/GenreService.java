@@ -17,7 +17,7 @@ public class GenreService {
 
     public Genre getGenreById(long id) {
         log.debug("Getting genre with ID {}", id);
-        return genreStorage.getGenreDyId(id).orElseThrow(() -> {
+        return genreStorage.getGenreById(id).orElseThrow(() -> {
             log.warn("Retrieving genre failed: genre with ID {} not found", id);
             return new InvalidGenreException("Error when retrieving genre", id);
         });

@@ -10,7 +10,7 @@ public interface GenreStorage {
 
     boolean checkGenreExists(long genreId);
 
-    Optional<Genre> getGenreDyId(long genreId);
+    Optional<Genre> getGenreById(long genreId);
 
     Collection<Genre> getAllGenres();
 
