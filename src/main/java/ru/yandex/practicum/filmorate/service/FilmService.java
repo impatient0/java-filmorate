@@ -61,9 +61,11 @@ public class FilmService {
             throw new InvalidMpaRatingException("Error when creating new film",
                 newFilmRequest.getMpa().getId());
         }
-        for (Genre genre : newFilmRequest.getGenres()) {
-            if (!genreStorage.checkGenreExists(genre.getId())) {
-                throw new InvalidGenreException("Error when creating new film", genre.getId());
+        if (newFilmRequest.getGenres() != null) {
+            for (Genre genre : newFilmRequest.getGenres()) {
+                if (!genreStorage.checkGenreExists(genre.getId())) {
+                    throw new InvalidGenreException("Error when creating new film", genre.getId());
+                }
             }
         }
         Film film = mapper.mapToFilmModel(newFilmRequest);

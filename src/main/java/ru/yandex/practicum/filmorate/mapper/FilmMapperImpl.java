@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import java.util.HashSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
@@ -30,7 +31,8 @@ public class FilmMapperImpl implements FilmMapper {
         film.setReleaseDate(newFilmRequest.getReleaseDate());
         film.setDuration(newFilmRequest.getDuration());
         film.setMpa(newFilmRequest.getMpa());
-        film.setGenres(newFilmRequest.getGenres());
+        film.setGenres(
+            newFilmRequest.getGenres() == null ? new HashSet<>() : newFilmRequest.getGenres());
         return film;
     }
 
