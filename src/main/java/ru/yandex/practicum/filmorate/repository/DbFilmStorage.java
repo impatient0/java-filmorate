@@ -32,7 +32,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     private static final String INSERT_QUERY =
         "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) "
             + "VALUES (?, ?, ?, ?, ?)";
-    private final static String ADD_GENRE_QUERY =
+    private static final String ADD_GENRE_QUERY =
         "INSERT INTO film_genres (film_id, genre_id)" + " VALUES (?, ?)";
     private static final String DELETE_GENRES_QUERY = "DELETE FROM film_genres WHERE film_id = ?";
     private static final String UPDATE_QUERY =
