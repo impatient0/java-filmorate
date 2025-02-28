@@ -22,12 +22,6 @@ public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
         "INSERT INTO users (email, login, name, birthday) " + "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
         "UPDATE users SET email = ?, login = ?, name = ?, " + "birthday = ? WHERE user_id = ?";
-    private static final String ADD_LIKE_QUERY =
-        "INSERT INTO likes (user_id, film_id, liked_at) " + "VALUES (?, ?, CURRENT_TIMESTAMP)";
-    private static final String REMOVE_LIKE_QUERY =
-        "DELETE FROM likes WHERE user_id = ? AND " + "film_id = ?";
-    private static final String GET_LIKED_FILMS_QUERY = "SELECT f.film_id FROM films AS f RIGHT "
-        + "JOIN likes AS l ON f.film_id = l.film_id WHERE l.user_id = ?";
 
     public DbUserStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
