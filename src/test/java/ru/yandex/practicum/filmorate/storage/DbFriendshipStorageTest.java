@@ -68,7 +68,8 @@ public class DbFriendshipStorageTest {
         jdbc.update(INSERT_DIRECTIONAL_FRIENDSHIP_QUERY, user1.getId(), user2.getId(),
             FriendshipStatus.PENDING.toString());
 
-        Optional<FriendshipStatus> friendshipStatus = friendshipStorage.getDirectionalFriendshipStatus(
+        Optional<FriendshipStatus> friendshipStatus =
+            friendshipStorage.getDirectionalFriendshipStatus(
             user1.getId(), user2.getId());
         assertThat(friendshipStatus).isPresent().contains(FriendshipStatus.PENDING);
     }
@@ -83,7 +84,8 @@ public class DbFriendshipStorageTest {
         friendshipStorage.insertDirectionalFriendship(user1.getId(), user2.getId(),
             FriendshipStatus.PENDING);
 
-        Optional<FriendshipStatus> friendshipStatus = friendshipStorage.getDirectionalFriendshipStatus(
+        Optional<FriendshipStatus> friendshipStatus =
+            friendshipStorage.getDirectionalFriendshipStatus(
             user1.getId(), user2.getId());
         assertThat(friendshipStatus).isPresent().contains(FriendshipStatus.PENDING);
     }
@@ -99,7 +101,8 @@ public class DbFriendshipStorageTest {
         friendshipStorage.updateFriendshipStatus(user1.getId(), user2.getId(),
             FriendshipStatus.CONFIRMED);
 
-        Optional<FriendshipStatus> friendshipStatus = friendshipStorage.getDirectionalFriendshipStatus(
+        Optional<FriendshipStatus> friendshipStatus =
+            friendshipStorage.getDirectionalFriendshipStatus(
             user1.getId(), user2.getId());
         assertThat(friendshipStatus).isPresent().contains(FriendshipStatus.CONFIRMED);
     }
@@ -115,7 +118,8 @@ public class DbFriendshipStorageTest {
 
         friendshipStorage.deleteDirectionalFriendship(user1.getId(), user2.getId());
 
-        Optional<FriendshipStatus> friendshipStatus = friendshipStorage.getDirectionalFriendshipStatus(
+        Optional<FriendshipStatus> friendshipStatus =
+            friendshipStorage.getDirectionalFriendshipStatus(
             user1.getId(), user2.getId());
         assertThat(friendshipStatus).isEmpty();
     }
