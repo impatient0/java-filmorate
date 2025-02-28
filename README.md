@@ -19,7 +19,12 @@ erDiagram
         TEXT description
         DATE release_date
         INTEGER duration
-        VARCHAR mpa_rating
+        SMALLINT mpa_rating_id FK
+    }
+
+    mpa_ratings {
+        SMALLINT mpa_id PK
+        VARCHAR name
     }
 
     genres {
@@ -45,12 +50,12 @@ erDiagram
         TIMESTAMP created_at
     }
 
-    users ||--o{ friendships : "friendships (user_id)"
-    users ||--o{ friendships : "friendships (friend_id)"
+    users ||--o{ friendships : "friendships (user, friend)"
     users ||--o{ likes : "likes"
     films ||--o{ likes : "likes"
     films ||--o{ film_genres : "film_genres"
     genres ||--o{ film_genres : "film_genres"
+    films }o--|| mpa_ratings : "mpa_rating"
 ```
 ### Example queries
 - Get all films (without genres):
@@ -69,35 +74,68 @@ FROM
 WHERE
     user_id = ?; -- Parameter: User ID
 ```
-- Get genres for film:
-```sql
-SELECT
-    g.genre_id,
-    g.name
-FROM
-    film_genres fg
-JOIN
-    genres g ON fg.genre_id = g.genre_id
-WHERE
-    fg.film_id = ?; -- Parameter: Film ID
-```
-- Get top 10 most liked films:
+
+- Select film by ID with genres and MPA rating (data comes back denormalized and is later processed
+  by extractor):
 ```sql
 SELECT
     f.film_id,
-    f.name,
+    f.name AS film_name,
     f.description,
     f.release_date,
     f.duration,
-    f.mpa_rating,
-    COUNT(l.like_id) AS like_count
+    m.mpa_id,
+    m.name AS mpa_name,
+    g.genre_id,
+    g.name AS genre_name
 FROM
     films f
 LEFT JOIN
-    likes l ON f.film_id = l.film_id
-GROUP BY
-    f.film_id
+    mpa_ratings m ON f.mpa_rating_id = m.mpa_id
+LEFT JOIN
+    film_genres fg ON f.film_id = fg.film_id
+LEFT JOIN
+    genres g ON fg.genre_id = g.genre_id
+WHERE
+    f.film_id = ?; -- Parameter: Film ID
+```
+
+- Get top most liked films:
+```sql
+WITH film_likes AS (
+    SELECT
+        film_id,
+        COUNT(film_id) AS likes_count
+    FROM
+        likes
+    GROUP BY
+        film_id
+)
+SELECT
+    f.film_id,
+    f.name AS film_name,
+    f.description,
+    f.release_date,
+    f.duration,
+    m.mpa_id,
+    m.name AS mpa_name,
+    g.genre_id,
+    g.name AS genre_name,
+    film_likes.likes_count
+FROM
+    films f
+JOIN
+    mpa_ratings m ON f.mpa_rating_id = m.mpa_id
+LEFT JOIN
+    film_genres fg ON f.film_id = fg.film_id
+LEFT JOIN
+    genres g ON fg.genre_id = g.genre_id
+JOIN
+    film_likes ON f.film_id = film_likes.film_id
 ORDER BY
-    like_count DESC
-LIMIT 10;
+    film_likes.likes_count DESC,
+    f.film_id,
+    g.genre_id
+LIMIT
+    ?; -- Parameter: number of films to fetch
 ```
