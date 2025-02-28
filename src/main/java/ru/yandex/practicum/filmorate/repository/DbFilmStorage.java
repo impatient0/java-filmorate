@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -54,7 +55,8 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(long filmId) {
         List<Film> resultList = jdbc.query(GET_BY_ID_QUERY, extractor, filmId);
-        return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.getFirst());
+        return CollectionUtils.isEmpty(resultList) ? Optional.empty()
+            : Optional.of(resultList.getFirst());
     }
 
     @Override
