@@ -1,0 +1,10 @@
+logging.level:
+  ru.yandex.practicum.filmorate: DEBUG
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  sql.init.mode: always
+  sql.init.schema-locations: classpath:test-schema.sql
