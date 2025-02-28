@@ -18,7 +18,7 @@ erDiagram
     films {
         BIGINT film_id PK
         VARCHAR name
-        TEXT description
+        VARCHAR description
         DATE release_date
         INTEGER duration
         SMALLINT mpa_rating_id FK
