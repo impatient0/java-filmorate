@@ -78,7 +78,7 @@ public class UserControllerTest {
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
         assertEquals("Error when creating new user", actualResponse.getMessage());
-        assertEquals("Invalid user data: E-mail must be valid.", actualResponse.getDescription());
+        assertEquals("Invalid User data: E-mail must be valid.", actualResponse.getDescription());
     }
 
     @Test
@@ -168,7 +168,7 @@ public class UserControllerTest {
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
         assertEquals("Error when updating user", actualResponse.getMessage());
-        assertEquals("Invalid user data: E-mail must be valid.", actualResponse.getDescription());
+        assertEquals("Invalid User data: E-mail must be valid.", actualResponse.getDescription());
     }
 
     @Test

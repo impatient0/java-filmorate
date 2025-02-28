@@ -76,7 +76,7 @@ public class FilmControllerTest {
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
         assertEquals("Error when creating new film", actualResponse.getMessage());
-        assertEquals("Invalid film data: Film name must not be blank.",
+        assertEquals("Invalid Film data: Film name must not be blank.",
             actualResponse.getDescription());
     }
 
@@ -146,7 +146,7 @@ public class FilmControllerTest {
         jsonResponse = resultPut.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
         assertEquals("Error when updating film", actualResponse.getMessage());
-        assertEquals("Invalid film data: Film name must not be blank.",
+        assertEquals("Invalid Film data: Film name must not be blank.",
             actualResponse.getDescription());
     }
 

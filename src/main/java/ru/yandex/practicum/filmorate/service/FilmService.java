@@ -14,8 +14,8 @@ import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
-import ru.yandex.practicum.filmorate.exception.InvalidGenreException;
-import ru.yandex.practicum.filmorate.exception.InvalidMpaRatingException;
+import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapperImpl;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -59,13 +59,13 @@ public class FilmService {
         }
         if (newFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
             newFilmRequest.getMpa().getId())) {
-            throw new InvalidMpaRatingException("Error when creating new film",
+            throw new MpaRatingNotFoundException("Error when creating new film",
                 newFilmRequest.getMpa().getId());
         }
         if (newFilmRequest.getGenres() != null) {
             for (Genre genre : newFilmRequest.getGenres()) {
                 if (!genreStorage.checkGenreExists(genre.getId())) {
-                    throw new InvalidGenreException("Error when creating new film", genre.getId());
+                    throw new GenreNotFoundException("Error when creating new film", genre.getId());
                 }
             }
         }
@@ -90,13 +90,13 @@ public class FilmService {
         }
         if (updateFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
             updateFilmRequest.getMpa().getId())) {
-            throw new InvalidMpaRatingException("Error when updating film",
+            throw new MpaRatingNotFoundException("Error when updating film",
                 updateFilmRequest.getMpa().getId());
         }
         if (updateFilmRequest.getGenres() != null) {
             for (Genre genre : updateFilmRequest.getGenres()) {
                 if (!genreStorage.checkGenreExists(genre.getId())) {
-                    throw new InvalidGenreException("Error when updating film", genre.getId());
+                    throw new GenreNotFoundException("Error when updating film", genre.getId());
                 }
             }
         }

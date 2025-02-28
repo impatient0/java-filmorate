@@ -4,7 +4,7 @@ import java.util.Collection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.InvalidMpaRatingException;
+import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
 
@@ -19,7 +19,7 @@ public class MpaRatingService {
         log.debug("Getting MPA rating with ID {}", id);
         return mpaRatingStorage.getMpaRatingById(id).orElseThrow(() -> {
             log.warn("Retrieving MPA rating failed: rating with ID {} not found", id);
-            return new InvalidMpaRatingException("Error when retrieving MPA rating", id);
+            return new MpaRatingNotFoundException("Error when retrieving MPA rating", id);
         });
     }
 

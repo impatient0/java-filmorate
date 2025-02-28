@@ -4,7 +4,7 @@ import java.util.Collection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.InvalidGenreException;
+import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 
@@ -19,7 +19,7 @@ public class GenreService {
         log.debug("Getting genre with ID {}", id);
         return genreStorage.getGenreById(id).orElseThrow(() -> {
             log.warn("Retrieving genre failed: genre with ID {} not found", id);
-            return new InvalidGenreException("Error when retrieving genre", id);
+            return new GenreNotFoundException("Error when retrieving genre", id);
         });
     }
 
