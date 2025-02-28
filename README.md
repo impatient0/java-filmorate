@@ -1,7 +1,9 @@
 # java-filmorate
 
 ## DB schema:
-(prettier verion available [here](https://drive.google.com/file/d/180JIfZNXEnq3Se4-3l66gs4mYytXpNV-/view?usp=sharing))
+
+(prettier version
+available [here](https://drive.google.com/file/d/180JIfZNXEnq3Se4-3l66gs4mYytXpNV-/view?usp=sharing))
 
 ```mermaid
 erDiagram
