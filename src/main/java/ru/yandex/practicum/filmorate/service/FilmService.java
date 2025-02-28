@@ -57,7 +57,8 @@ public class FilmService {
             log.warn("Adding film failed: {}", violationMessage);
             throw new FilmValidationException("Error when creating new film", violationMessage);
         }
-        if (!mpaRatingStorage.checkMpaRatingExists(newFilmRequest.getMpa().getId())) {
+        if (newFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
+            newFilmRequest.getMpa().getId())) {
             throw new InvalidMpaRatingException("Error when creating new film",
                 newFilmRequest.getMpa().getId());
         }
@@ -80,7 +81,8 @@ public class FilmService {
             log.warn("Updating film failed: film with ID {} not found", updateFilmRequest.getId());
             return new FilmNotFoundException("Error when updating film", updateFilmRequest.getId());
         });
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<UpdateFilmRequest>> violations = validator.validate(
+            updateFilmRequest);
         if (!violations.isEmpty()) {
             String violationMessage = violations.iterator().next().getMessage();
             log.warn("Updating film failed: {}", violationMessage);
