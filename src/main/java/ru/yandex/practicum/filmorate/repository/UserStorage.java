@@ -1,31 +1,18 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import ru.yandex.practicum.filmorate.model.User;
 
 public interface UserStorage {
 
-    Optional<User> getUserById(long id);
+    boolean checkUserExists(long userId);
+
+    Optional<User> getUserById(long userId);
 
     long addUser(User user);
 
     void updateUser(User user);
 
-    Map<Long, User> getAllUsers();
-
-    void addLike(long userId, long filmId);
-
-    void removeLike(long userId, long filmId);
-
-    Set<Long> getUserLikedFilms(long userId);
-
-    void addFriend(long userId, long friendId);
-
-    void deleteFriend(long userId, long friendId);
-
-    Set<Long> getUserFriends(long userId);
-
-    Set<Long> getCommonFriends(long userId1, long userId2);
+    Collection<User> getAllUsers();
 }

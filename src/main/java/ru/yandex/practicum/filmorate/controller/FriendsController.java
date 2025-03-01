@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.service.FriendsService;
 
 @RestController
@@ -24,14 +24,14 @@ public class FriendsController {
     private final FriendsService friendsService;
 
     @GetMapping
-    public ResponseEntity<Collection<User>> getFriends(@PathVariable long id) {
+    public ResponseEntity<Collection<UserDto>> getFriends(@PathVariable long id) {
         log.info("Request to get user {} friends received.", id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
             .body(friendsService.getUserFriends(id));
     }
 
     @GetMapping("/common/{otherId}")
-    public ResponseEntity<Collection<User>> getCommonFriends(@PathVariable long id,
+    public ResponseEntity<Collection<UserDto>> getCommonFriends(@PathVariable long id,
         @PathVariable long otherId) {
         log.info("Request to get common friends of user {} and {} received.", id, otherId);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)

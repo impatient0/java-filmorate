@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import ru.yandex.practicum.filmorate.dto.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -31,22 +34,22 @@ public class UserController {
     private final long currentId = 1L;
 
     @GetMapping
-    public ResponseEntity<Collection<User>> getAllUsers() {
+    public ResponseEntity<Collection<UserDto>> getAllUsers() {
         log.info("Request to get all users received.");
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
             .body(userService.getAllUsers());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable long id) {
+    public ResponseEntity<UserDto> getUserById(@PathVariable long id) {
         log.info("Request to get user with ID {} received.", id);
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody User newUser) {
-        log.info("Request to create new user received: {}", newUser);
-        User createdUser = userService.addUser(newUser);
+    public ResponseEntity<UserDto> create(@RequestBody NewUserRequest newUserRequest) {
+        log.info("Request to create new user received: {}", newUserRequest);
+        UserDto createdUser = userService.addUser(newUserRequest);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
             .buildAndExpand(createdUser.getId()).toUri();
         log.info("New user created with ID {}", createdUser.getId());
@@ -54,10 +57,10 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<User> update(@RequestBody User newUser) {
-        log.info("Request to update user received: {}", newUser);
-        userService.updateUser(newUser);
-        log.info("User with ID {} updated", newUser.getId());
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(newUser);
+    public ResponseEntity<UserDto> update(@RequestBody UpdateUserRequest updateUserRequest) {
+        log.info("Request to update user received: {}", updateUserRequest);
+        UserDto updatedUser = userService.updateUser(updateUserRequest);
+        log.info("User with ID {} updated", updateUserRequest.getId());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedUser);
     }
 }

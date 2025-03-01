@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikesService;
 
@@ -30,23 +32,23 @@ public class FilmController {
     private final LikesService likesService;
 
     @GetMapping
-    public ResponseEntity<Collection<Film>> getAllFilms() {
+    public ResponseEntity<Collection<FilmDto>> getAllFilms() {
         log.info("Request to get all films received.");
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
             .body(filmService.getAllFilms());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Film> getFilmById(@PathVariable long id) {
+    public ResponseEntity<FilmDto> getFilmById(@PathVariable long id) {
         log.info("Request to get film with ID {} received.", id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
             .body(filmService.getFilmById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Film> create(@RequestBody Film newFilm) {
-        log.info("Request to create new film received: {}", newFilm);
-        Film createdFilm = filmService.addFilm(newFilm);
+    public ResponseEntity<FilmDto> create(@RequestBody NewFilmRequest newFilmRequest) {
+        log.info("Request to create new film received: {}", newFilmRequest);
+        FilmDto createdFilm = filmService.addFilm(newFilmRequest);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
             .buildAndExpand(createdFilm.getId()).toUri();
         log.info("New film created with ID {}", createdFilm.getId());
@@ -55,15 +57,15 @@ public class FilmController {
     }
 
     @PutMapping
-    public ResponseEntity<Film> update(@RequestBody Film newFilm) {
-        log.info("Request to update film received: {}", newFilm);
-        filmService.updateFilm(newFilm);
-        log.info("Film with ID {} updated", newFilm.getId());
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(newFilm);
+    public ResponseEntity<FilmDto> update(@RequestBody UpdateFilmRequest updateFilmRequest) {
+        log.info("Request to update film received: {}", updateFilmRequest);
+        FilmDto updatedFilm = filmService.updateFilm(updateFilmRequest);
+        log.info("Film with ID {} updated", updateFilmRequest.getId());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedFilm);
     }
 
     @GetMapping("/popular")
-    public ResponseEntity<Collection<Film>> getPopularFilms(
+    public ResponseEntity<Collection<FilmDto>> getPopularFilms(
         @RequestParam(required = false, defaultValue = "10") int count) {
         log.info("Request to get {} popular films received.", count);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
