@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -181,5 +185,32 @@ public class FilmControllerTest {
         assertEquals(newFilm.getDuration(), updatedFilm.getDuration());
         assertEquals(newFilm.getDescription(), updatedFilm.getDescription());
         assertEquals(newFilm.getReleaseDate(), updatedFilm.getReleaseDate());
+    }
+
+    @Test
+    void shouldDeleteFilm() throws Exception {
+        Film film = new Film();
+        film.setName(MOCK_FILM_NAME);
+        film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
+        film.setDescription(MOCK_FILM_DESCRIPTION);
+        film.setDuration(MOCK_FILM_DURATION);
+        MvcResult resultPost = mockMvc.perform(
+                post("/films").content(mapper.writeValueAsString(film))
+                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isCreated())
+            .andReturn();
+        String jsonResponse = resultPost.getResponse().getContentAsString();
+        Film createdFilm = mapper.readValue(jsonResponse, Film.class);
+
+        mockMvc.perform(delete("/films/" + createdFilm.getId())).andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/films/" + createdFilm.getId())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/films/999999")).andExpect(status().isNotFound())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.message").value("Error when deleting film"))
+            .andExpect(jsonPath("$.description").value("Film with ID 999999 not found"));
     }
 }

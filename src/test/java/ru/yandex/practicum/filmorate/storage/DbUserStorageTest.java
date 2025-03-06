@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.DbUserStorage;
 import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
@@ -121,5 +122,20 @@ class DbUserStorageTest {
 
         assertThat(userStorage.checkUserExists(user.getId())).isTrue();
         assertThat(userStorage.checkUserExists(user.getId() + 42L)).isFalse();
+    }
+
+    @Test
+    void testDeleteUser() {
+        User user = createUser("test@example.com", "testlogin", "Test User",
+            LocalDate.of(2000, 1, 1));
+        long userId = user.getId();
+
+        userStorage.deleteUser(userId);
+
+        assertThat(userStorage.checkUserExists(userId)).isFalse();
+        assertThat(userStorage.getUserById(userId)).isEmpty();
+
+        assertThatThrownBy(() -> userStorage.deleteUser(userId)).isInstanceOf(
+            InternalServerException.class);
     }
 }

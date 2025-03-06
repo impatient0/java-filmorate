@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -204,5 +208,32 @@ public class UserControllerTest {
         assertEquals(newUser.getLogin(), actualResponse.getLogin());
         assertEquals(newUser.getName(), actualResponse.getName());
         assertEquals(newUser.getBirthday(), actualResponse.getBirthday());
+    }
+
+    @Test
+    void shouldDeleteUser() throws Exception {
+        User user = new User();
+        user.setEmail(MOCK_USER_EMAIL);
+        user.setLogin(MOCK_USER_LOGIN);
+        user.setName(MOCK_USER_NAME);
+        user.setBirthday(MOCK_USER_BIRTHDAY);
+        MvcResult resultPost = mockMvc.perform(
+                post("/users").content(mapper.writeValueAsString(user))
+                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isCreated())
+            .andReturn();
+        String jsonResponse = resultPost.getResponse().getContentAsString();
+        User createdUser = mapper.readValue(jsonResponse, User.class);
+
+        mockMvc.perform(delete("/users/" + createdUser.getId())).andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/users/" + createdUser.getId())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/users/999999")).andExpect(status().isNotFound())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.message").value("Error when deleting user"))
+            .andExpect(jsonPath("$.description").value("User with ID 999999 not found"));
     }
 }
