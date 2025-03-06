@@ -35,7 +35,7 @@ public class DbLikesStorage implements LikesStorage {
         + " film_name, f.description, f.release_date, f.duration, m.mpa_id, m.name AS mpa_name, g"
         + ".genre_id, g.name AS genre_name, film_likes.likes_count FROM films f JOIN mpa_ratings "
         + "m ON f.mpa_rating_id = m.mpa_id LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
-        + "LEFT JOIN genres g ON fg.genre_id = g.genre_id JOIN film_likes ON f.film_id = "
+        + "LEFT JOIN genres g ON fg.genre_id = g.genre_id LEFT JOIN film_likes ON f.film_id = "
         + "film_likes.film_id ORDER BY film_likes.likes_count DESC, f.film_id, g.genre_id LIMIT ?";
 
     private final JdbcTemplate jdbc;
