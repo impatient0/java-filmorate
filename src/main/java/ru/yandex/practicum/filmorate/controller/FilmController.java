@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,4 +72,13 @@ public class FilmController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
             .body(likesService.getPopularFilms(count));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFilm(@PathVariable long id) {
+        log.info("Request to delete film with ID {} received.", id);
+        filmService.deleteFilm(id);
+        log.info("Film with ID {} deleted.", id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
