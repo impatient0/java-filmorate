@@ -30,11 +30,11 @@ import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
     FilmWithGenresDataMapper.class})
 public class DbLikesStorageTest {
 
-    private static final String DELETE_LIKES_QUERY = "DELETE FROM likes";
+    private static final String DELETE_LIKES_QUERY = "DELETE FROM ratings";
     private static final String DELETE_FILMS_QUERY = "DELETE FROM films";
     private static final String DELETE_USERS_QUERY = "DELETE FROM users";
-    private static final String ADD_LIKE_QUERY =
-        "INSERT INTO likes (user_id, film_id) VALUES (?," + " ?)";
+    private static final String ADD_LIKE_QUERY = "INSERT INTO ratings (user_id, film_id, "
+        + "rating_value) VALUES (?, ?, 1)";
     private final DbLikesStorage likesStorage;
     private final DbUserStorage userStorage;
     private final DbFilmStorage filmStorage;
@@ -83,28 +83,28 @@ public class DbLikesStorageTest {
     }
 
     @Test
-    void testAddLike() {
+    void testSaveRating() {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
             "G");
 
-        likesStorage.addLike(user.getId(), film.getId());
-        assertThat(jdbc.queryForList("SELECT user_id FROM likes WHERE film_id = ?", Long.class,
+        likesStorage.saveRating(user.getId(), film.getId(), 1);
+        assertThat(jdbc.queryForList("SELECT user_id FROM ratings WHERE film_id = ?", Long.class,
             film.getId())).containsExactly(user.getId());
     }
 
     @Test
-    void testRemoveLike() {
+    void testRemoveRating() {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
             "G");
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film.getId());
 
-        likesStorage.removeLike(user.getId(), film.getId());
+        likesStorage.removeRating(user.getId(), film.getId());
 
-        assertThat(jdbc.queryForList("SELECT * FROM likes")).isEmpty();
+        assertThat(jdbc.queryForList("SELECT * FROM ratings")).isEmpty();
     }
 
     @Test
@@ -118,14 +118,14 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film2.getId());
 
-        Collection<Film> likedFilms = likesStorage.getUserLikedFilms(user.getId());
+        Collection<Film> likedFilms = likesStorage.getUserRatedFilms(user.getId());
 
         assertThat(likedFilms.size()).isEqualTo(2);
         assertThat(likedFilms).contains(film1, film2);
     }
 
     @Test
-    void testGetUsersWhoLikedFilm() {
+    void testGetUsersWhoRatedFilm() {
         User user1 = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         User user2 = createUser("user2@example.com", "user2login", "User 2",
@@ -135,7 +135,7 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film.getId());
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film.getId());
 
-        Collection<User> users = likesStorage.getUsersWhoLikedFilm(film.getId());
+        Collection<User> users = likesStorage.getUsersWhoRatedFilm(film.getId());
 
         assertThat(users.size()).isEqualTo(2);
         assertThat(users).contains(user1, user2);

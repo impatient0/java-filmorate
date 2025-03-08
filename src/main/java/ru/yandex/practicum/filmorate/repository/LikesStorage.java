@@ -6,13 +6,13 @@ import ru.yandex.practicum.filmorate.model.User;
 
 public interface LikesStorage {
 
-    void addLike(long userId, long filmId);
+    void saveRating(long userId, long filmId, int rating);
 
-    void removeLike(long userId, long filmId);
+    void removeRating(long userId, long filmId);
 
-    Collection<Film> getUserLikedFilms(long userId);
+    Collection<Film> getUserRatedFilms(long userId);
 
-    Collection<User> getUsersWhoLikedFilm(long filmId);
+    Collection<User> getUsersWhoRatedFilm(long filmId);
 
     Collection<Film> getPopularFilms(long count);
 

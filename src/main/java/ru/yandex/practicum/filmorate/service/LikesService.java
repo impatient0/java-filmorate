@@ -33,7 +33,7 @@ public class LikesService {
             throw new FilmNotFoundException("Error when liking film", filmId);
         }
         log.debug("User with ID {} likes film with ID {}", userId, filmId);
-        likesStorage.addLike(userId, filmId);
+        likesStorage.saveRating(userId, filmId, 1);
     }
 
     public void unlikeFilm(long userId, long filmId) {
@@ -46,7 +46,7 @@ public class LikesService {
             throw new FilmNotFoundException("Error when unliking film", filmId);
         }
         log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
-        likesStorage.removeLike(userId, filmId);
+        likesStorage.removeRating(userId, filmId);
     }
 
     public List<FilmDto> getPopularFilms(int count) {
