@@ -35,9 +35,7 @@ public abstract class DbBaseStorage<T> {
     }
 
     protected void delete(String query, long id) {
-        if (jdbc.update(query, id) <= 0) {
-            throw new InternalServerException("Failed to delete data.");
-        }
+        jdbc.update(query, id);
     }
 
     protected void update(String query, Object... params) {
