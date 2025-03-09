@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.net.URI;
 import java.util.Collection;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -25,9 +24,9 @@ import ru.yandex.practicum.filmorate.service.LikesService;
 
 @RestController
 @RequestMapping("/films")
+@Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
-@Slf4j
 public class FilmController {
 
     private final FilmService filmService;
@@ -37,14 +36,14 @@ public class FilmController {
     public ResponseEntity<Collection<FilmDto>> getAllFilms() {
         log.info("Request to get all films received.");
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(filmService.getAllFilms());
+            .body(filmService.getAllFilms());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FilmDto> getFilmById(@PathVariable long id) {
         log.info("Request to get film with ID {} received.", id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(filmService.getFilmById(id));
+            .body(filmService.getFilmById(id));
     }
 
     @PostMapping
@@ -52,10 +51,10 @@ public class FilmController {
         log.info("Request to create new film received: {}", newFilmRequest);
         FilmDto createdFilm = filmService.addFilm(newFilmRequest);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(createdFilm.getId()).toUri();
+            .buildAndExpand(createdFilm.getId()).toUri();
         log.info("New film created with ID {}", createdFilm.getId());
         return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON)
-                .body(createdFilm);
+            .body(createdFilm);
     }
 
     @PutMapping
