@@ -21,13 +21,14 @@ import ru.yandex.practicum.filmorate.repository.DbFilmStorage;
 import ru.yandex.practicum.filmorate.repository.DbLikesStorage;
 import ru.yandex.practicum.filmorate.repository.DbUserStorage;
 import ru.yandex.practicum.filmorate.repository.mappers.FilmWithGenresDataMapper;
+import ru.yandex.practicum.filmorate.repository.mappers.RatingRowMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({DbLikesStorage.class, DbUserStorage.class, DbFilmStorage.class, UserRowMapper.class,
-    FilmWithGenresDataMapper.class})
+    FilmWithGenresDataMapper.class, RatingRowMapper.class})
 public class DbLikesStorageTest {
 
     private static final String DELETE_LIKES_QUERY = "DELETE FROM ratings";
@@ -83,13 +84,13 @@ public class DbLikesStorageTest {
     }
 
     @Test
-    void testSaveRating() {
+    void testAddRating() {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
             "G");
 
-        likesStorage.saveRating(user.getId(), film.getId(), 1);
+        likesStorage.addRating(user.getId(), film.getId(), 1);
         assertThat(jdbc.queryForList("SELECT user_id FROM ratings WHERE film_id = ?", Long.class,
             film.getId())).containsExactly(user.getId());
     }
@@ -108,7 +109,7 @@ public class DbLikesStorageTest {
     }
 
     @Test
-    void testGetLikedFilms() {
+    void testGetRatedFilms() {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
@@ -118,7 +119,7 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film2.getId());
 
-        Collection<Film> likedFilms = likesStorage.getUserRatedFilms(user.getId());
+        Collection<Film> likedFilms = likesStorage.getFilmsRatedByUser(user.getId());
 
         assertThat(likedFilms.size()).isEqualTo(2);
         assertThat(likedFilms).contains(film1, film2);

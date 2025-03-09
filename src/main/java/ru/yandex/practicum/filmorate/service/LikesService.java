@@ -33,7 +33,7 @@ public class LikesService {
             throw new FilmNotFoundException("Error when liking film", filmId);
         }
         log.debug("User with ID {} likes film with ID {}", userId, filmId);
-        likesStorage.saveRating(userId, filmId, 1);
+        likesStorage.addRating(userId, filmId, 1);
     }
 
     public void unlikeFilm(long userId, long filmId) {
