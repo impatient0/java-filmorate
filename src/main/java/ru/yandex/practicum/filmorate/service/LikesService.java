@@ -22,6 +22,7 @@ public class LikesService {
     private final FilmStorage filmStorage;
     private final LikesStorage likesStorage;
     private final FilmMapper filmMapper;
+    private final RecommendationService recommendationService;
 
     public void likeFilm(long userId, long filmId) {
         if (userStorage.getUserById(userId).isEmpty()) {
@@ -34,6 +35,7 @@ public class LikesService {
         }
         log.debug("User with ID {} likes film with ID {}", userId, filmId);
         likesStorage.addRating(userId, filmId, 1);
+        recommendationService.updateDiffAndFreq(userId, filmId, 1);
     }
 
     public void unlikeFilm(long userId, long filmId) {
@@ -47,6 +49,7 @@ public class LikesService {
         }
         log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
         likesStorage.removeRating(userId, filmId);
+        recommendationService.updateDiffAndFreq(userId, filmId, -1);
     }
 
     public List<FilmDto> getPopularFilms(int count) {

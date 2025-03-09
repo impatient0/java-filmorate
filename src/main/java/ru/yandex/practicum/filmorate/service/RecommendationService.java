@@ -51,21 +51,9 @@ public class RecommendationService {
                     if (filmId1.equals(filmId2)) {
                         continue; // Skip same-film comparisons
                     }
-                    // Update diff and freq
-                    diff.computeIfAbsent(filmId1, k -> new HashMap<>()).compute(filmId2, (k, v) -> {
-                        if (v == null) {
-                            return rating1 - rating2;
-                        } else {
-                            return v + rating1 - rating2;
-                        }
-                    });
-                    freq.computeIfAbsent(filmId1, k -> new HashMap<>()).compute(filmId2, (k, v) -> {
-                        if (v == null) {
-                            return 1;
-                        } else {
-                            return v + 1;
-                        }
-                    });
+                    // Update diff and freq for both directions
+                    updateDiffAndFreqForPair(diff, freq, filmId1, filmId2, rating1, rating2);
+                    updateDiffAndFreqForPair(diff, freq, filmId2, filmId1, rating2, rating1);
                 }
             }
         }
@@ -80,6 +68,27 @@ public class RecommendationService {
         diffFreqStorage.saveDiff(diff);
         diffFreqStorage.saveFreq(freq);
         log.info("Diff and freq matrices calculated and saved");
+    }
+
+    private void updateDiffAndFreqForPair(Map<Long, Map<Long, Double>> diff,
+        Map<Long, Map<Long, Integer>> freq, Long filmId1, Long filmId2, Double rating1,
+        Double rating2) {
+        // Update diff
+        diff.computeIfAbsent(filmId1, k -> new HashMap<>()).compute(filmId2, (k, v) -> {
+            if (v == null) {
+                return rating1 - rating2;
+            } else {
+                return v + rating1 - rating2;
+            }
+        });
+        // Update freq
+        freq.computeIfAbsent(filmId1, k -> new HashMap<>()).compute(filmId2, (k, v) -> {
+            if (v == null) {
+                return 1;
+            } else {
+                return v + 1;
+            }
+        });
     }
 
     public void updateDiffAndFreq(long userId, long filmId, int ratingValue) {
@@ -100,24 +109,11 @@ public class RecommendationService {
             if (filmId == otherFilmId) {
                 continue;
             }
-            // Update diff
-            diff.computeIfAbsent(filmId, k -> new HashMap<>()).compute(otherFilmId, (k, v) -> {
-                if (v == null) {
-                    return (double) ratingValue - otherRating;
-                } else {
-                    Map<Long, Integer> filmFreq = freq.get(filmId);
-                    int count = filmFreq == null ? 0 : filmFreq.getOrDefault(otherFilmId, 0);
-                    return (v * count + ratingValue - otherRating) / (count + 1);
-                }
-            });
-            // Update freq
-            freq.computeIfAbsent(filmId, k -> new HashMap<>()).compute(otherFilmId, (k, v) -> {
-                if (v == null) {
-                    return 1;
-                } else {
-                    return v + 1;
-                }
-            });
+            // Update for both directions
+            updateDiffAndFreqForPair(diff, freq, filmId, otherFilmId, (double) ratingValue,
+                (double) otherRating);
+            updateDiffAndFreqForPair(diff, freq, otherFilmId, filmId, (double) otherRating,
+                (double) ratingValue);
         }
 
         // Save the updated matrices
@@ -130,7 +126,6 @@ public class RecommendationService {
         log.info("Getting recommendations for user {}", userId);
         // Load diff and freq
         Map<Long, Map<Long, Double>> diff = diffFreqStorage.loadDiff();
-        Map<Long, Map<Long, Integer>> freq = diffFreqStorage.loadFreq();
 
         // Load user ratings
         List<Rating> userRatings = likesStorage.getRatingsByUser(userId);

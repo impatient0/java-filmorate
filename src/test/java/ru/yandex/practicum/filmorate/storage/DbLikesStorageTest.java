@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.DbFilmStorage;
 import ru.yandex.practicum.filmorate.repository.DbLikesStorage;
@@ -109,6 +110,56 @@ public class DbLikesStorageTest {
     }
 
     @Test
+    void testGetRatingsOfFilm() {
+        User user1 = createUser("user1@example.com", "user1login", "User 1",
+            LocalDate.of(2000, 1, 1));
+        User user2 = createUser("user2@example.com", "user2login", "User 2",
+            LocalDate.of(2001, 2, 2));
+        Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
+            "G");
+        likesStorage.addRating(user1.getId(), film.getId(), 10);
+        likesStorage.addRating(user2.getId(), film.getId(), 5);
+        List<Rating> ratings = likesStorage.getRatingsOfFilm(film.getId());
+        assertThat(ratings).hasSize(2);
+        assertThat(ratings.get(0).getRatingValue()).isEqualTo(10);
+        assertThat(ratings.get(1).getRatingValue()).isEqualTo(5);
+    }
+
+    @Test
+    void testGetRatingsByUser() {
+        User user = createUser("user1@example.com", "user1login", "User 1",
+            LocalDate.of(2000, 1, 1));
+        Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
+            1, "G");
+        Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
+            2, "PG");
+        likesStorage.addRating(user.getId(), film1.getId(), 10);
+        likesStorage.addRating(user.getId(), film2.getId(), 5);
+        List<Rating> ratings = likesStorage.getRatingsByUser(user.getId());
+        assertThat(ratings).hasSize(2);
+        assertThat(ratings.get(0).getRatingValue()).isEqualTo(10);
+        assertThat(ratings.get(1).getRatingValue()).isEqualTo(5);
+    }
+
+    @Test
+    void testGetAllRatings() {
+        User user1 = createUser("user1@example.com", "user1login", "User 1",
+            LocalDate.of(2000, 1, 1));
+        User user2 = createUser("user2@example.com", "user2login", "User 2",
+            LocalDate.of(2001, 2, 2));
+        Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
+            1, "G");
+        Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
+            2, "PG");
+        likesStorage.addRating(user1.getId(), film1.getId(), 10);
+        likesStorage.addRating(user2.getId(), film2.getId(), 5);
+        List<Rating> ratings = likesStorage.getAllRatings();
+        assertThat(ratings).hasSize(2);
+        assertThat(ratings.get(0).getRatingValue()).isEqualTo(10);
+        assertThat(ratings.get(1).getRatingValue()).isEqualTo(5);
+    }
+
+    @Test
     void testGetRatedFilms() {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
@@ -143,6 +194,24 @@ public class DbLikesStorageTest {
     }
 
     @Test
+    void testGetUsersWhoRatedBothFilms() {
+        User user1 = createUser("user1@example.com", "user1login", "User 1",
+            LocalDate.of(2000, 1, 1));
+        User user2 = createUser("user2@example.com", "user2login", "User 2",
+            LocalDate.of(2001, 2, 2));
+        Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
+            1, "G");
+        Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
+            2, "PG");
+        likesStorage.addRating(user1.getId(), film1.getId(), 10);
+        likesStorage.addRating(user1.getId(), film2.getId(), 5);
+        likesStorage.addRating(user2.getId(), film1.getId(), 5);
+        List<User> users = likesStorage.getUsersWhoRatedBothFilms(film1.getId(), film2.getId());
+        assertThat(users).hasSize(1);
+        assertThat(users.getFirst().getId()).isEqualTo(user1.getId());
+    }
+
+    @Test
     void testGetPopularFilms() {
         User user1 = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
@@ -156,7 +225,7 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
 
-        List<Film> popularFilms = (List<Film>) likesStorage.getPopularFilms(2);
+        List<Film> popularFilms = likesStorage.getPopularFilms(2);
 
         assertThat(popularFilms.size()).isEqualTo(2);
         assertThat(popularFilms.get(0)).isEqualTo(film1);

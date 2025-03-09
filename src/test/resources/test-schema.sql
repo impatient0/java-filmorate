@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS ratings (
     user_id BIGINT NOT NULL,
     film_id BIGINT NOT NULL,
     rating_value INT NOT NULL,
-    liked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    rated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, film_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE
