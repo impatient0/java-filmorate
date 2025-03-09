@@ -48,7 +48,7 @@ public class DbLikesStorage implements LikesStorage {
                     "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id " +
                     "LEFT JOIN film_likes ON f.film_id = film_likes.film_id " +
                     "WHERE EXISTS (SELECT 1 FROM film_genres fg WHERE fg.film_id = f.film_id AND fg.genre_id = ?) " +
-                    "AND EXTRACT(YEAR FROM f.release_date) = ? " +
+                    "AND f.release_date >= ? AND f.release_date < ? " +
                     "ORDER BY likes_count DESC, f.film_id " +
                     "LIMIT ?";
 
@@ -83,6 +83,8 @@ public class DbLikesStorage implements LikesStorage {
 
     @Override
     public Collection<Film> getPopularFilmsByGenreAndYear(long count, int genreId, int year) {
-        return jdbc.query(GET_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY, filmExtractor, genreId, year, count);
+        String startDate = year + "-01-01";
+        String endDate = (year + 1) + "-01-01";
+        return jdbc.query(GET_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY, filmExtractor, genreId, startDate, endDate, count);
     }
 }
