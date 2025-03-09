@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import java.util.Collection;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -15,5 +16,7 @@ public interface LikesStorage {
     Collection<User> getUsersWhoLikedFilm(long filmId);
 
     Collection<Film> getPopularFilms(long count);
+
+    Collection<Film> getPopularFilmsByGenreAndYear(long count, int genreId, int year);
 
 }
