@@ -1,13 +1,7 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -73,62 +67,10 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     private final ResultSetExtractor<List<Film>> extractor;
     private final ResultSetExtractor<List<Film>> commonFilmsExtractor;
 
-    public DbFilmStorage(JdbcTemplate jdbc, ResultSetExtractor<List<Film>> extractor) {
+    public DbFilmStorage(JdbcTemplate jdbc, ResultSetExtractor<List<Film>> extractor, ResultSetExtractor<List<Film>> commonFilmsExtractor) {
         super(jdbc, null);
         this.extractor = extractor;
-        this.commonFilmsExtractor = rs -> {
-            Map<Long, Film> filmMap = new LinkedHashMap<>();
-            while (rs.next()) {
-                long filmId = safeGetLong(rs);
-                Film film = filmMap.computeIfAbsent(filmId, id -> {
-                    Film f = new Film();
-                    f.setId(id);
-                    f.setName(safeGetString(rs, "film_name"));
-                    f.setDescription(safeGetString(rs, "description"));
-                    f.setReleaseDate(safeGetLocalDate(rs));
-                    f.setDuration(safeGetInt(rs, "duration"));
-                    MpaRating mpa = new MpaRating();
-                    mpa.setId(safeGetInt(rs, "mpa_id"));
-                    mpa.setName(safeGetString(rs, "mpa_name"));
-                    f.setMpa(mpa);
-                    return f;
-                });
-            }
-            return new ArrayList<>(filmMap.values());
-        };
-    }
-
-    // Методы-обёртки для безопасного получения значений из ResultSet:
-    private String safeGetString(ResultSet rs, String columnName) {
-        try {
-            return rs.getString(columnName);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error reading String column '" + columnName + "': " + e.getMessage(), e);
-        }
-    }
-
-    private int safeGetInt(ResultSet rs, String columnName) {
-        try {
-            return rs.getInt(columnName);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error reading int column '" + columnName + "': " + e.getMessage(), e);
-        }
-    }
-
-    private long safeGetLong(ResultSet rs) {
-        try {
-            return rs.getLong("film_id");
-        } catch (SQLException e) {
-            throw new RuntimeException("Error reading long column '" + "film_id" + "': " + e.getMessage(), e);
-        }
-    }
-
-    private LocalDate safeGetLocalDate(ResultSet rs) {
-        try {
-            return rs.getDate("release_date").toLocalDate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error reading LocalDate column '" + "release_date" + "': " + e.getMessage(), e);
-        }
+        this.commonFilmsExtractor = commonFilmsExtractor;
     }
 
     @Override
