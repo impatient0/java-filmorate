@@ -22,6 +22,7 @@ public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
         "INSERT INTO users (email, login, name, birthday) " + "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
         "UPDATE users SET email = ?, login = ?, name = ?, " + "birthday = ? WHERE user_id = ?";
+    private static final String DELETE_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     public DbUserStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -52,6 +53,11 @@ public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
     @Override
     public Collection<User> getAllUsers() {
         return new ArrayList<>(getMultiple(GET_ALL_QUERY));
+    }
+
+    @Override
+    public void deleteUser(long userId) {
+        delete(DELETE_QUERY, userId);
     }
 
 }
