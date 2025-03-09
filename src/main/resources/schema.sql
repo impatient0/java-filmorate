@@ -54,6 +54,24 @@ CREATE TABLE IF NOT EXISTS ratings (
     FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS item_diff (
+    film_id1 BIGINT NOT NULL,
+    film_id2 BIGINT NOT NULL,
+    diff_value DOUBLE PRECISION NOT NULL,
+    PRIMARY KEY (film_id1, film_id2),
+    FOREIGN KEY (film_id1) REFERENCES films(film_id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id2) REFERENCES films(film_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS item_freq (
+    film_id1 BIGINT NOT NULL,
+    film_id2 BIGINT NOT NULL,
+    freq_value INTEGER NOT NULL,
+    PRIMARY KEY (film_id1, film_id2),
+    FOREIGN KEY (film_id1) REFERENCES films(film_id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id2) REFERENCES films(film_id) ON DELETE CASCADE
+);
+
 INSERT INTO mpa_ratings (name)
 SELECT 'G' WHERE NOT EXISTS (SELECT 1 FROM mpa_ratings WHERE name = 'G');
 INSERT INTO mpa_ratings (name)
