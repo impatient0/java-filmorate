@@ -31,6 +31,40 @@ public class DbLikesStorage implements LikesStorage {
             + ".genre_id";
     private static final String GET_USERS_WHO_LIKED_FILM_QUERY = "SELECT u.* FROM users AS u RIGHT "
             + "JOIN likes AS l ON u.user_id = l.user_id WHERE l.film_id = ?";
+    private static final String GET_POPULAR_FILMS_QUERY = "WITH film_likes AS (SELECT film_id, "
+            + "COUNT(film_id) AS likes_count FROM likes GROUP BY film_id) SELECT f.film_id, f.name AS"
+            + " film_name, f.description, f.release_date, f.duration, m.mpa_id, m.name AS mpa_name, g"
+            + ".genre_id, g.name AS genre_name, film_likes.likes_count FROM films f JOIN mpa_ratings "
+            + "m ON f.mpa_rating_id = m.mpa_id LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
+            + "LEFT JOIN genres g ON fg.genre_id = g.genre_id JOIN film_likes ON f.film_id = "
+            + "film_likes.film_id ORDER BY film_likes.likes_count DESC, f.film_id, g.genre_id LIMIT ?";
+
+    private static final String GET_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY =
+            "WITH film_likes AS (\n" +
+                    "    SELECT film_id, COUNT(film_id) AS likes_count \n" +
+                    "    FROM likes \n" +
+                    "    GROUP BY film_id\n" +
+                    ")\n" +
+                    "SELECT \n" +
+                    "    f.film_id, \n" +
+                    "    f.name AS film_name, \n" +
+                    "    f.description, \n" +
+                    "    f.release_date, \n" +
+                    "    f.duration, \n" +
+                    "    m.mpa_id, \n" +
+                    "    m.name AS mpa_name, \n" +
+                    "    COALESCE(film_likes.likes_count, 0) AS likes_count \n" +
+                    "FROM films f \n" +
+                    "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id \n" +
+                    "LEFT JOIN film_likes ON f.film_id = film_likes.film_id \n" +
+                    "WHERE EXISTS (\n" +
+                    "    SELECT 1 \n" +
+                    "    FROM film_genres fg \n" +
+                    "    WHERE fg.film_id = f.film_id AND fg.genre_id = ?\n" +
+                    ") \n" +
+                    "AND EXTRACT(YEAR FROM f.release_date) = ?\n" +
+                    "ORDER BY likes_count DESC, f.film_id \n" +
+                    "LIMIT ?;";
 
     private final JdbcTemplate jdbc;
     private final RowMapper<User> userMapper;
@@ -56,35 +90,13 @@ public class DbLikesStorage implements LikesStorage {
         return jdbc.query(GET_USERS_WHO_LIKED_FILM_QUERY, userMapper, filmId);
     }
 
-    // В DbLikesStorage
-    private static final String GET_POPULAR_FILMS_QUERY =
-            "WITH film_likes AS (" +
-                    "    SELECT film_id, COUNT(film_id) AS likes_count " +
-                    "    FROM likes " +
-                    "    GROUP BY film_id" +
-                    ") " +
-                    "SELECT f.film_id, f.name AS film_name, f.description, f.release_date, f.duration, " +
-                    "       m.mpa_id, m.name AS mpa_name, " +
-                    "       g.genre_id, g.name AS genre_name, " +
-                    "       film_likes.likes_count " +
-                    "FROM films f " +
-                    "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id " +
-                    "JOIN film_likes ON f.film_id = film_likes.film_id " +
-                    "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                    "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
-                    "WHERE EXISTS (" +
-                    "    SELECT 1 " +
-                    "    FROM film_genres " +
-                    "    WHERE film_id = f.film_id " +
-                    "    AND genre_id = ?" +
-                    ") " +
-                    "AND EXTRACT(YEAR FROM f.release_date) = ? " +
-                    "GROUP BY f.film_id, m.mpa_id, g.genre_id, film_likes.likes_count " +
-                    "ORDER BY film_likes.likes_count DESC, f.film_id " +
-                    "LIMIT ?";
+    @Override
+    public Collection<Film> getPopularFilms(long count) {
+        return jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, count);
+    }
 
     @Override
-    public Collection<Film> getPopularFilms(int genreId, int year, long count) {
-        return jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, genreId, year, count);
+    public Collection<Film> getPopularFilmsByGenreAndYear(long count, int genreId, int year) {
+        return jdbc.query(GET_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY, filmExtractor, genreId, year, count);
     }
 }

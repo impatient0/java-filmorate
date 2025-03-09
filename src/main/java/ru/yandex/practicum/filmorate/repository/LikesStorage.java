@@ -15,5 +15,8 @@ public interface LikesStorage {
 
     Collection<User> getUsersWhoLikedFilm(long filmId);
 
-    Collection<Film> getPopularFilms(int genreId, int year, long count);
+    Collection<Film> getPopularFilms(long count);
+
+    Collection<Film> getPopularFilmsByGenreAndYear(long count, int genreId, int year);
+
 }

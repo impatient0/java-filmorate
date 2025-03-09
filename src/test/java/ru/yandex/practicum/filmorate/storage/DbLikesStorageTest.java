@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -139,5 +140,26 @@ public class DbLikesStorageTest {
 
         assertThat(users.size()).isEqualTo(2);
         assertThat(users).contains(user1, user2);
+    }
+
+    @Test
+    void testGetPopularFilms() {
+        User user1 = createUser("user1@example.com", "user1login", "User 1",
+            LocalDate.of(2000, 1, 1));
+        User user2 = createUser("user2@example.com", "user2login", "User 2",
+            LocalDate.of(2001, 2, 2));
+        Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
+            1, "G");
+        Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
+            2, "PG");
+        jdbc.update(ADD_LIKE_QUERY, user1.getId(), film1.getId());
+        jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
+        jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
+
+        List<Film> popularFilms = (List<Film>) likesStorage.getPopularFilms(2);
+
+        assertThat(popularFilms.size()).isEqualTo(2);
+        assertThat(popularFilms.get(0)).isEqualTo(film1);
+        assertThat(popularFilms.get(1)).isEqualTo(film2);
     }
 }
