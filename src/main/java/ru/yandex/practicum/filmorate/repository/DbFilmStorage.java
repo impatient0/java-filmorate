@@ -39,6 +39,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     private static final String UPDATE_QUERY =
         "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, "
             + "mpa_rating_id = ? " + "WHERE film_id = ?";
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final ResultSetExtractor<List<Film>> extractor;
 
@@ -88,4 +89,10 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     public Collection<Film> getAllFilms() {
         return jdbc.query(GET_ALL_QUERY, extractor);
     }
+
+    @Override
+    public void deleteFilm(long filmId) {
+        delete(DELETE_QUERY, filmId);
+    }
+
 }
