@@ -12,9 +12,11 @@
 		<relativePath/>
 		<version>3.4.2</version> <!-- lookup parent from repository -->
 	</parent>
-	<properties>
-		<java.version>21</java.version>
-	</properties>
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
+    </properties>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<dependencies>
