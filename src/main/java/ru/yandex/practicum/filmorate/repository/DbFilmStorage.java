@@ -54,15 +54,15 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
 
     // Обновлённый запрос для общих фильмов – с объединением жанров
     private static final String GET_COMMON_FILMS_QUERY = """
-        SELECT 
-            f.film_id, 
-            f.name AS film_name, 
-            f.description, 
-            f.release_date, 
-            f.duration, 
-            COALESCE(m.mpa_id, 0) AS mpa_id, 
-            COALESCE(m.name, 'Unknown') AS mpa_name, 
-            g.genre_id, 
+        SELECT
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            COALESCE(m.mpa_id, 0) AS mpa_id,
+            COALESCE(m.name, 'Unknown') AS mpa_name,
+            g.genre_id,
             g.name AS genre_name,
             COUNT(l.user_id) AS like_count
         FROM films f
@@ -71,7 +71,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         LEFT JOIN film_genres fg ON f.film_id = fg.film_id
         LEFT JOIN genres g ON fg.genre_id = g.genre_id
         WHERE l.user_id IN (?, ?)
-        GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, 
+        GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration,
                  COALESCE(m.mpa_id, 0), COALESCE(m.name, 'Unknown'), g.genre_id, g.name
         HAVING COUNT(DISTINCT l.user_id) >= 2
         ORDER BY like_count DESC, f.film_id
@@ -121,7 +121,6 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     }
 
     // Методы-обёртки для безопасного получения значений из ResultSet
-
     @SuppressWarnings("SameParameterValue")
     private String safeGetString(ResultSet rs, String columnName) {
         try {
