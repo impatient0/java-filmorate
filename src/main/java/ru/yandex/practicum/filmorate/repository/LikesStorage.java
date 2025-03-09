@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.Collection;
+import java.util.List;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
@@ -11,19 +11,18 @@ public interface LikesStorage {
 
     void removeRating(long userId, long filmId);
 
-    Collection<Rating> getRatingsOfFilm(long filmId);
+    List<Rating> getRatingsOfFilm(long filmId);
 
-    Collection<Rating> getRatingsByUser(long userId);
+    List<Rating> getRatingsByUser(long userId);
 
-    Collection<Rating> getAllRatings();
+    List<Rating> getAllRatings();
 
-    Collection<Film> getFilmsRatedByUser(long userId);
+    List<Film> getFilmsRatedByUser(long userId);
 
-    Collection<User> getUsersWhoRatedFilm(long filmId);
+    List<User> getUsersWhoRatedFilm(long filmId);
 
-    Collection<User> getUsersWhoRatedBothFilms(long filmId1, long filmId2);
+    List<User> getUsersWhoRatedBothFilms(long filmId1, long filmId2);
 
-    Collection<Film> getPopularFilms(long count);
-
+    List<Film> getPopularFilms(long count);
 
 }

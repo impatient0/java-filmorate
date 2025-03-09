@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.Collection;
 import java.util.List;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -65,37 +64,37 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     }
 
     @Override
-    public Collection<Rating> getRatingsOfFilm(long filmId) {
+    public List<Rating> getRatingsOfFilm(long filmId) {
         return getMultiple(GET_ALL_RATINGS_QUERY + " WHERE film_id = ?", filmId);
     }
 
     @Override
-    public Collection<Rating> getRatingsByUser(long userId) {
+    public List<Rating> getRatingsByUser(long userId) {
         return getMultiple(GET_ALL_RATINGS_QUERY + " WHERE user_id = ?", userId);
     }
 
     @Override
-    public Collection<Rating> getAllRatings() {
+    public List<Rating> getAllRatings() {
         return getMultiple(GET_ALL_RATINGS_QUERY);
     }
 
     @Override
-    public Collection<Film> getFilmsRatedByUser(long userId) {
+    public List<Film> getFilmsRatedByUser(long userId) {
         return jdbc.query(GET_RATED_FILMS_QUERY, filmExtractor, userId);
     }
 
     @Override
-    public Collection<User> getUsersWhoRatedFilm(long filmId) {
+    public List<User> getUsersWhoRatedFilm(long filmId) {
         return jdbc.query(GET_USERS_WHO_RATED_FILM_QUERY, userMapper, filmId);
     }
 
     @Override
-    public Collection<User> getUsersWhoRatedBothFilms(long filmId1, long filmId2) {
+    public List<User> getUsersWhoRatedBothFilms(long filmId1, long filmId2) {
         return jdbc.query(GET_USERS_WHO_RATED_BOTH_FILMS_QUERY, userMapper, filmId1, filmId2);
     }
 
     @Override
-    public Collection<Film> getPopularFilms(long count) {
+    public List<Film> getPopularFilms(long count) {
         return jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, count);
     }
 }
