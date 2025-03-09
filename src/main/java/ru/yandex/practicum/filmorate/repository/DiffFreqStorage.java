@@ -6,7 +6,7 @@ public interface DiffFreqStorage {
 
     void saveDiff(Map<Long, Map<Long, Double>> diff);
 
-    void saveFeq(Map<Long, Map<Long, Integer>> freq);
+    void saveFreq(Map<Long, Map<Long, Integer>> freq);
 
     Map<Long, Map<Long, Double>> loadDiff();
 
