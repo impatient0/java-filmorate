@@ -50,16 +50,11 @@ public class LikesService {
         likesStorage.removeLike(userId, filmId);
     }
 
-    public List<FilmDto> getPopularFilms(int count) {
-        log.debug("Getting {} most popular films", count);
-        return likesStorage.getPopularFilms(count).stream().map(filmMapper::mapToFilmDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FilmDto> getPopularFilmsByGenreAndYear(int count, int genreId, int year) {
-        log.debug("Getting {} most popular films for genre ID {} and year {}", count, genreId, year);
-        return likesStorage.getPopularFilmsByGenreAndYear(count, genreId, year).stream()
+    public List<FilmDto> getPopularFilms(int count, int genreId, int year) {
+        log.debug("Getting {} most popular films of genre {} for year {}", count, genreId, year);
+        return likesStorage.getPopularFilms(genreId, year, count).stream()
                 .map(filmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
+
 }

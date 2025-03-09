@@ -65,21 +65,14 @@ public class FilmController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedFilm);
     }
 
-    @GetMapping("/popular")
-    public ResponseEntity<Collection<FilmDto>> getPopularFilms(
-            @RequestParam(required = false, defaultValue = "10") int count) {
-        log.info("Request to get {} popular films received.", count);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(likesService.getPopularFilms(count));
-    }
-
     @GetMapping("/films/popular")
-    public ResponseEntity<Collection<FilmDto>> getPopularFilmsByGenreAndYear(
+    public ResponseEntity<Collection<FilmDto>> getPopularFilms(
             @RequestParam(required = false, defaultValue = "10") int count,
-            @RequestParam(required = false) int genreId,
-            @RequestParam(required = false) int year) {
-        log.info("Request to get {} popular films for genre ID {} and year {} received.", count, genreId, year);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(likesService.getPopularFilmsByGenreAndYear(count, genreId, year));
+            @RequestParam int genreId,
+            @RequestParam int year) {
+        log.info("Request to get {} popular films of genre {} for year {}", count, genreId, year);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(likesService.getPopularFilms(count, genreId, year));
     }
 }
