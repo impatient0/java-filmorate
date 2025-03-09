@@ -73,6 +73,16 @@ public class FilmController {
             .body(likesService.getPopularFilms(count));
     }
 
+    @GetMapping("/common")
+    public ResponseEntity<Collection<FilmDto>> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId) {
+        log.info("Request to get common films for users {} and {}", userId, friendId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(filmService.getCommonFilms(userId, friendId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFilm(@PathVariable long id) {
         log.info("Request to delete film with ID {} received.", id);
