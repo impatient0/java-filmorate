@@ -14,11 +14,5 @@ public interface LikesStorage {
 
     Collection<User> getUsersWhoLikedFilm(long filmId);
 
-    Collection<Film> getPopularFilms(long count);
-
-    Collection<Film> getPopularFilmsByGenreAndYear(long count, int genreId, int year);
-
-    Collection<Film> getPopularFilmsByGenre(long count, int genreId); // Новый метод
-
-    Collection<Film> getPopularFilmsByYear(long count, int year);     // Новый метод
+    Collection<Film> getPopularFilms(long count, Integer genreId, Integer year);
 }

@@ -50,29 +50,9 @@ public class LikesService {
         likesStorage.removeLike(userId, filmId);
     }
 
-    public List<FilmDto> getPopularFilms(int count) {
-        log.debug("Getting {} most popular films", count);
-        return likesStorage.getPopularFilms(count).stream().map(filmMapper::mapToFilmDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FilmDto> getPopularFilmsByGenreAndYear(int count, int genreId, int year) {
-        log.debug("Getting {} most popular films for genre ID {} and year {}", count, genreId, year);
-        return likesStorage.getPopularFilmsByGenreAndYear(count, genreId, year).stream()
-                .map(filmMapper::mapToFilmDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FilmDto> getPopularFilmsByGenre(int count, int genreId) {
-        log.debug("Getting {} most popular films for genre ID {}", count, genreId);
-        return likesStorage.getPopularFilmsByGenre(count, genreId).stream()
-                .map(filmMapper::mapToFilmDto)
-                .collect(Collectors.toList());
-    }
-
-    public List<FilmDto> getPopularFilmsByYear(int count, int year) {
-        log.debug("Getting {} most popular films for year {}", count, year);
-        return likesStorage.getPopularFilmsByYear(count, year).stream()
+    public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
+        log.debug("Getting {} most popular films with genreId={} and year={}", count, genreId, year);
+        return likesStorage.getPopularFilms(count, genreId, year).stream()
                 .map(filmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
