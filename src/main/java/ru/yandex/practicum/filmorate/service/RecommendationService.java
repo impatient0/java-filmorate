@@ -139,6 +139,7 @@ public class RecommendationService {
             double rating = entry.getValue();
             Map<Long, Double> filmDiff = diff.get(filmId);
             if (filmDiff != null) {
+                int[] predictionsCount = {0};
                 for (Map.Entry<Long, Double> diffEntry : filmDiff.entrySet()) {
                     long otherFilmId = diffEntry.getKey();
                     double diffValue = diffEntry.getValue();
@@ -147,9 +148,11 @@ public class RecommendationService {
                     if (!userRatingMap.containsKey(otherFilmId)) {
                         predictedRatings.compute(otherFilmId, (k, v) -> {
                             if (v == null) {
+                                predictionsCount[0]++;
                                 return otherFilmRating;
                             } else {
-                                return (v + otherFilmRating) / 2;
+                                return (v * predictionsCount[0] + otherFilmRating)
+                                    / (++predictionsCount[0]);
                             }
                         });
                     }
