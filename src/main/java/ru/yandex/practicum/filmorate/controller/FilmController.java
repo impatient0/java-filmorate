@@ -26,6 +26,7 @@ import ru.yandex.practicum.filmorate.service.LikesService;
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 @Slf4j
 public class FilmController {
 

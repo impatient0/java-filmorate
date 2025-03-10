@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.model.User;
 @Repository
 @Primary
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 @Slf4j
 public class DbLikesStorage implements LikesStorage {
 
@@ -55,27 +56,39 @@ public class DbLikesStorage implements LikesStorage {
 
     @Override
     public void addLike(long userId, long filmId) {
-        jdbc.update(ADD_LIKE_QUERY, userId, filmId);
+        log.info("Adding like from userId={} to filmId={}", userId, filmId);
+        int rowsAffected = jdbc.update(ADD_LIKE_QUERY, userId, filmId);
+        log.debug("Like added, rows affected: {}", rowsAffected);
     }
 
     @Override
     public void removeLike(long userId, long filmId) {
-        jdbc.update(REMOVE_LIKE_QUERY, userId, filmId);
+        log.info("Removing like from userId={} to filmId={}", userId, filmId);
+        int rowsAffected = jdbc.update(REMOVE_LIKE_QUERY, userId, filmId);
+        log.debug("Like removed, rows affected: {}", rowsAffected);
     }
 
     @Override
     public Collection<Film> getUserLikedFilms(long userId) {
-        return jdbc.query(GET_LIKED_FILMS_QUERY, filmExtractor, userId);
+        log.info("Fetching liked films for userId={}", userId);
+        List<Film> films = jdbc.query(GET_LIKED_FILMS_QUERY, filmExtractor, userId);
+        log.debug("Found {} liked films for userId={}", films.size(), userId);
+        return films;
     }
 
     @Override
     public Collection<User> getUsersWhoLikedFilm(long filmId) {
-        return jdbc.query(GET_USERS_WHO_LIKED_FILM_QUERY, userMapper, filmId);
+        log.info("Fetching users who liked filmId={}", filmId);
+        List<User> users = jdbc.query(GET_USERS_WHO_LIKED_FILM_QUERY, userMapper, filmId);
+        log.debug("Found {} users for filmId={}", users.size(), filmId);
+        return users;
     }
 
     @Override
     public Collection<Film> getPopularFilms(long count, Integer genreId, Integer year) {
         log.info("Fetching popular films with count={}, genreId={}, year={}", count, genreId, year);
-        return jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year, genreId, genreId, count);
+        List<Film> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year, genreId, genreId, count);
+        log.debug("Found {} popular films", films.size());
+        return films;
     }
 }
