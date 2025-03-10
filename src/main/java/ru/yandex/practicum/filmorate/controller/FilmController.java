@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.net.URI;
 import java.util.Collection;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -36,14 +37,14 @@ public class FilmController {
     public ResponseEntity<Collection<FilmDto>> getAllFilms() {
         log.info("Request to get all films received.");
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-            .body(filmService.getAllFilms());
+                .body(filmService.getAllFilms());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FilmDto> getFilmById(@PathVariable long id) {
         log.info("Request to get film with ID {} received.", id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-            .body(filmService.getFilmById(id));
+                .body(filmService.getFilmById(id));
     }
 
     @PostMapping
@@ -51,10 +52,10 @@ public class FilmController {
         log.info("Request to create new film received: {}", newFilmRequest);
         FilmDto createdFilm = filmService.addFilm(newFilmRequest);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-            .buildAndExpand(createdFilm.getId()).toUri();
+                .buildAndExpand(createdFilm.getId()).toUri();
         log.info("New film created with ID {}", createdFilm.getId());
         return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON)
-            .body(createdFilm);
+                .body(createdFilm);
     }
 
     @PutMapping
@@ -67,10 +68,10 @@ public class FilmController {
 
     @GetMapping("/popular")
     public ResponseEntity<Collection<FilmDto>> getPopularFilms(
-        @RequestParam(required = false, defaultValue = "10") int count) {
+            @RequestParam(required = false, defaultValue = "10") int count) {
         log.info("Request to get {} popular films received.", count);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-            .body(likesService.getPopularFilms(count));
+                .body(likesService.getPopularFilms(count));
     }
 
     @DeleteMapping("/{id}")
@@ -80,5 +81,27 @@ public class FilmController {
         log.info("Film with ID {} deleted.", id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/films/popular")
+    public ResponseEntity<Collection<FilmDto>> getPopularFilmsByGenreAndYear(
+            @RequestParam(defaultValue = "10") int count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
+        log.info("Request to get {} popular films for genre ID {} and year {} received.", count, genreId, year);
+        Collection<FilmDto> films;
+        if (genreId != null && year != null) {
+            films = likesService.getPopularFilmsByGenreAndYear(count, genreId, year);
+        } else if (genreId != null) {
+            films = likesService.getPopularFilmsByGenre(count, genreId);
+        } else if (year != null) {
+            films = likesService.getPopularFilmsByYear(count, year);
+        } else {
+            films = likesService.getPopularFilms(count);
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(films);
+    }
+
 
 }
