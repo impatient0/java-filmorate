@@ -56,13 +56,12 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
                     + "LEFT JOIN likes l ON f.film_id = l.film_id WHERE d.director_id = ? ORDER BY cnt DESC) WHERE cnt > 0";
     private static final String GET_BY_DIRECTOR_ID_YEAR_QUERY =
             "SELECT f.film_id, " + "f.name AS film_name, f.description, f.release_date, f.duration, "
-                    + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, d.director_id, d.name AS director_name, COUNT(l.user_id) as cnt "
+                    + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, d.director_id, d.name AS director_name "
                     + "FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
                     + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
                     + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
                     + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
-                    + "LEFT JOIN directors d ON fd.director_id = d.director_id "
-                    + "LEFT JOIN likes l ON f.film_id = l.film_id WHERE d.director_id = ? ORDER BY f.release_date DESC";
+                    + "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE d.director_id = ? ORDER BY f.release_date DESC";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final ResultSetExtractor<List<Film>> extractor;
