@@ -33,7 +33,7 @@ public class DbLikesStorage implements LikesStorage {
     private static final String GET_POPULAR_FILMS_QUERY = "WITH film_likes AS (SELECT film_id, "
         + "COUNT(film_id) AS likes_count FROM likes GROUP BY film_id) SELECT f.film_id, f.name AS"
         + " film_name, f.description, f.release_date, f.duration, m.mpa_id, m.name AS mpa_name, g"
-        + ".genre_id, g.name AS genre_name, film_likes.likes_count FROM films f JOIN mpa_ratings "
+        + ".genre_id, g.name AS genre_name, d.director_id, d.name AS director_name, film_likes.likes_count FROM films f JOIN mpa_ratings "
         + "m ON f.mpa_rating_id = m.mpa_id LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
         + "LEFT JOIN genres g ON fg.genre_id = g.genre_id LEFT JOIN film_likes ON f.film_id = "
         + "film_likes.film_id "
