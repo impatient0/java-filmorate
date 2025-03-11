@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
@@ -18,4 +19,5 @@ public class FilmDto {
     private int duration;
     private MpaRating mpa;
     private Set<Genre> genres;
+    private Set<Director> director;
 }

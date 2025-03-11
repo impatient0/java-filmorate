@@ -2,9 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +15,10 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmValidationException;
 import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
-import ru.yandex.practicum.filmorate.mapper.FilmMapperImpl;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
@@ -32,12 +32,13 @@ public class FilmService {
     private final MpaRatingStorage mpaRatingStorage;
     private final GenreStorage genreStorage;
     private final Validator validator;
-    private final FilmMapperImpl mapper;
+    private final FilmMapper mapper;
+    private final DirectorStorage directorStorage;
 
     public Collection<FilmDto> getAllFilms() {
         log.debug("Getting all films");
         return filmStorage.getAllFilms().stream().map(mapper::mapToFilmDto)
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public FilmDto getFilmById(long id) {
@@ -58,9 +59,9 @@ public class FilmService {
             throw new FilmValidationException("Error when creating new film", violationMessage);
         }
         if (newFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
-            newFilmRequest.getMpa().getId())) {
+                newFilmRequest.getMpa().getId())) {
             throw new MpaRatingNotFoundException("Error when creating new film",
-                newFilmRequest.getMpa().getId());
+                    newFilmRequest.getMpa().getId());
         }
         if (newFilmRequest.getGenres() != null) {
             for (Genre genre : newFilmRequest.getGenres()) {
@@ -71,9 +72,8 @@ public class FilmService {
         }
         Film film = mapper.mapToFilmModel(newFilmRequest);
         long filmId = filmStorage.addFilm(film);
-        film.setId(filmId);
         log.debug("Adding new film {}", newFilmRequest);
-        return mapper.mapToFilmDto(film);
+        return mapper.mapToFilmDto(filmStorage.getFilmById(filmId).get());
     }
 
     public FilmDto updateFilm(UpdateFilmRequest updateFilmRequest) {
@@ -82,16 +82,16 @@ public class FilmService {
             return new FilmNotFoundException("Error when updating film", updateFilmRequest.getId());
         });
         Set<ConstraintViolation<UpdateFilmRequest>> violations = validator.validate(
-            updateFilmRequest);
+                updateFilmRequest);
         if (!violations.isEmpty()) {
             String violationMessage = violations.iterator().next().getMessage();
             log.warn("Updating film failed: {}", violationMessage);
             throw new FilmValidationException("Error when updating film", violationMessage);
         }
         if (updateFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
-            updateFilmRequest.getMpa().getId())) {
+                updateFilmRequest.getMpa().getId())) {
             throw new MpaRatingNotFoundException("Error when updating film",
-                updateFilmRequest.getMpa().getId());
+                    updateFilmRequest.getMpa().getId());
         }
         if (updateFilmRequest.getGenres() != null) {
             for (Genre genre : updateFilmRequest.getGenres()) {
@@ -106,4 +106,16 @@ public class FilmService {
         return mapper.mapToFilmDto(film);
     }
 
+    public List<FilmDto> getFilmsByLikes(long directorId, Set<String> params) {
+        Optional<List<Film>> film = filmStorage.getDirectorFilmsBylikes(directorId, params);
+        if (film.isEmpty()) {
+            log.warn("Getting films failed: TOP films with director ID {} not found", directorId);
+            throw new FilmNotFoundException("Error when getting films", directorId);
+        }
+        log.debug("Getting films with directorID {}", directorId);
+        List<FilmDto> list = new ArrayList<>();
+        for (Film f: film.get())
+            list.add(mapper.mapToFilmDto(f));
+        return list;
+    }
 }
