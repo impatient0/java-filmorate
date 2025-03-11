@@ -61,7 +61,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
             + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
             + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
             + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
-            + "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE d.director_id = ? ";
+            + "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE d.director_id = ? ORDER BY f.film_id, f.release_date DESC";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final ResultSetExtractor<List<Film>> extractor;
@@ -109,6 +109,11 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 jdbc.update(ADD_GENRE_QUERY, film.getId(), genre.getId());
+            }
+        }
+        if (film.getDirector() != null) {
+            for (Director director : film.getDirector()) {
+                jdbc.update(ADD_DIRECTORS_QUERY, film.getId(), director.getId());
             }
         }
     }
