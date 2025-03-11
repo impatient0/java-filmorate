@@ -20,4 +20,6 @@ public interface FilmStorage {
     Collection<Film> getAllFilms();
 
     Optional<List<Film>> getDirectorFilmsBylikes(long directorId, Set<String> params);
+
+    void deleteFilm(long filmId);
 }

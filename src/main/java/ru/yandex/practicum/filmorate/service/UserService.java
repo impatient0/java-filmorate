@@ -32,13 +32,13 @@ public class UserService {
             .collect(Collectors.toList());
     }
 
-    public UserDto getUserById(long id) {
-        Optional<User> user = userStorage.getUserById(id);
+    public UserDto getUserById(long userId) {
+        Optional<User> user = userStorage.getUserById(userId);
         if (user.isEmpty()) {
-            log.warn("Getting user failed: user with ID {} not found", id);
-            throw new UserNotFoundException("Error when getting user", id);
+            log.warn("Getting user failed: user with ID {} not found", userId);
+            throw new UserNotFoundException("Error when getting user", userId);
         }
-        log.debug("Getting user with ID {}", id);
+        log.debug("Getting user with ID {}", userId);
         return mapper.mapToUserDto(user.get());
     }
 
@@ -76,6 +76,15 @@ public class UserService {
         user = mapper.updateUserFields(user, updateUserRequest);
         userStorage.updateUser(user);
         return mapper.mapToUserDto(user);
+    }
+
+    public void deleteUser(long userId) {
+        if (!userStorage.checkUserExists(userId)) {
+            log.warn("Deleting user failed: user with ID {} not found", userId);
+            throw new UserNotFoundException("Error when deleting user", userId);
+        }
+        log.debug("Deleting user with ID {}", userId);
+        userStorage.deleteUser(userId);
     }
 
 }

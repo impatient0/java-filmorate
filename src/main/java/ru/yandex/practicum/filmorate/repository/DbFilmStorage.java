@@ -63,6 +63,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
                     + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
                     + "LEFT JOIN directors d ON fd.director_id = d.director_id "
                     + "LEFT JOIN likes l ON f.film_id = l.film_id WHERE d.director_id = ? ORDER BY f.release_date DESC";
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final ResultSetExtractor<List<Film>> extractor;
 
@@ -128,4 +129,10 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         return CollectionUtils.isEmpty(resultList) ? Optional.empty()
                 : Optional.of(resultList);
     }
+
+    @Override
+    public void deleteFilm(long filmId) {
+        delete(DELETE_QUERY, filmId);
+    }
+
 }
