@@ -35,7 +35,7 @@ public class FilmMapperImpl implements FilmMapper {
         film.setGenres(
                 newFilmRequest.getGenres() == null ? new HashSet<>() : newFilmRequest.getGenres());
         film.setDirector(
-                newFilmRequest.getDirector() == null ? new HashSet<>() : newFilmRequest.getDirector());
+                newFilmRequest.getDirectors() == null ? new HashSet<>() : newFilmRequest.getDirectors());
         return film;
     }
 
@@ -58,6 +58,9 @@ public class FilmMapperImpl implements FilmMapper {
         }
         if (updateFilmRequest.getGenres() != null) {
             film.setGenres(updateFilmRequest.getGenres());
+        }
+        if (updateFilmRequest.getDirectors() != null) {
+            film.setDirector(updateFilmRequest.getDirectors());
         }
         return film;
     }
