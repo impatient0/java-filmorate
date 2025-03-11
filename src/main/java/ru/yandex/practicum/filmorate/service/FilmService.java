@@ -72,8 +72,9 @@ public class FilmService {
         }
         Film film = mapper.mapToFilmModel(newFilmRequest);
         long filmId = filmStorage.addFilm(film);
+        film.setId(filmId);
         log.debug("Adding new film {}", newFilmRequest);
-        return mapper.mapToFilmDto(filmStorage.getFilmById(filmId).get());
+        return mapper.mapToFilmDto(film);
     }
 
     public FilmDto updateFilm(UpdateFilmRequest updateFilmRequest) {
