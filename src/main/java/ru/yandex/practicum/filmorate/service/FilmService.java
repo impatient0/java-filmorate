@@ -108,14 +108,14 @@ public class FilmService {
     }
 
     public List<FilmDto> getFilmsByLikes(long directorId, Set<String> params) {
-        Optional<List<Film>> film = filmStorage.getDirectorFilmsBylikes(directorId, params);
+        Collection<Film> film = filmStorage.getDirectorFilmsBylikes(directorId, params);
         if (film.isEmpty()) {
             log.warn("Getting films failed: TOP films with director ID {} not found", directorId);
             throw new FilmNotFoundException("Error when getting films", directorId);
         }
         log.debug("Getting films with directorID {}", directorId);
         List<FilmDto> list = new ArrayList<>();
-        for (Film f: film.get())
+        for (Film f: film)
             list.add(mapper.mapToFilmDto(f));
         return list;
     }

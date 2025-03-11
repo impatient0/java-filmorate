@@ -120,14 +120,13 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Optional<List<Film>> getDirectorFilmsBylikes(long directorId, Set<String> params) {
-        List<Film> resultList = new ArrayList<>();
+    public Collection<Film> getDirectorFilmsBylikes(long directorId, Set<String> params) {
+        Collection<Film> resultList = new LinkedList<>();
         if (params.contains("likes"))
             resultList = jdbc.query(GET_BY_DIRECTOR_ID_LIKES_QUERY, extractor, directorId);
         if (params.contains("year"))
             resultList = jdbc.query(GET_BY_DIRECTOR_ID_YEAR_QUERY, extractor, directorId);
-        return CollectionUtils.isEmpty(resultList) ? Optional.empty()
-                : Optional.of(resultList);
+        return resultList;
     }
 
     @Override
