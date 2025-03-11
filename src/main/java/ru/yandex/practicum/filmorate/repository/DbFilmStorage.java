@@ -56,12 +56,12 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
                     + "LEFT JOIN likes l ON f.film_id = l.film_id WHERE d.director_id = ? ORDER BY cnt DESC) WHERE cnt > 0";
     private static final String GET_BY_DIRECTOR_ID_YEAR_QUERY =
             "SELECT f.film_id, " + "f.name AS film_name, f.description, f.release_date, f.duration, "
-                    + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, d.director_id, d.name AS director_name "
-                    + "FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
-                    + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
-                    + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
-                    + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
-                    + "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE d.director_id = ? ";
+            + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, d.director_id, d.name AS director_name "
+            + "FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
+            + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
+            + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
+            + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
+            + "LEFT JOIN directors d ON fd.director_id = d.director_id ORDER BY f.film_id WHERE d.director_id = ? ";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final ResultSetExtractor<List<Film>> extractor;
@@ -122,9 +122,9 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     public Collection<Film> getDirectorFilmsBylikes(long directorId, Set<String> params) {
         Collection<Film> resultList = List.of();
         if (params.contains("likes"))
-            resultList = jdbc.query(GET_BY_DIRECTOR_ID_LIKES_QUERY, extractor, directorId);
-        if (params.contains("year"))
-            resultList = jdbc.query(GET_BY_DIRECTOR_ID_YEAR_QUERY, extractor, directorId);
+            return jdbc.query(GET_BY_DIRECTOR_ID_LIKES_QUERY, extractor, directorId);
+        else if (params.contains("year"))
+            return jdbc.query(GET_BY_DIRECTOR_ID_YEAR_QUERY, extractor, directorId);
         return resultList;
     }
 
