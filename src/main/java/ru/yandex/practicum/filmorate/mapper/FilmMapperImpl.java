@@ -20,7 +20,7 @@ public class FilmMapperImpl implements FilmMapper {
         filmDto.setDuration(film.getDuration());
         filmDto.setMpa(film.getMpa());
         filmDto.setGenres(film.getGenres());
-        filmDto.setDirector(film.getDirector());
+        filmDto.setDirectors(film.getDirector());
         return filmDto;
     }
 
