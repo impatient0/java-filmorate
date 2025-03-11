@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -149,5 +148,17 @@ class DbFilmStorageTest {
         Collection<Film> films = filmStorage.getAllFilms();
         assertThat(films.size()).isEqualTo(2);
         assertThat(films).contains(film1, film2);
+    }
+
+    @Test
+    void testDeleteFilm() {
+        Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
+            "G");
+        long filmId = film.getId();
+
+        filmStorage.deleteFilm(filmId);
+
+        assertThat(filmStorage.checkFilmExists(filmId)).isFalse();
+        assertThat(filmStorage.getFilmById(filmId)).isEmpty();
     }
 }

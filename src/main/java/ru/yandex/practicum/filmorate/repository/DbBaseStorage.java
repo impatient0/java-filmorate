@@ -34,8 +34,8 @@ public abstract class DbBaseStorage<T> {
         return jdbc.query(query, mapper, params);
     }
 
-    protected boolean delete(String query, long id) {
-        return jdbc.update(query, id) > 0;
+    protected void delete(String query, long id) {
+        jdbc.update(query, id);
     }
 
     protected void update(String query, Object... params) {

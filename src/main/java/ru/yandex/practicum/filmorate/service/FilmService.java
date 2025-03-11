@@ -41,13 +41,13 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public FilmDto getFilmById(long id) {
-        Optional<Film> film = filmStorage.getFilmById(id);
+    public FilmDto getFilmById(long filmId) {
+        Optional<Film> film = filmStorage.getFilmById(filmId);
         if (film.isEmpty()) {
-            log.warn("Getting film failed: film with ID {} not found", id);
-            throw new FilmNotFoundException("Error when getting film", id);
+            log.warn("Getting film failed: film with ID {} not found", filmId);
+            throw new FilmNotFoundException("Error when getting film", filmId);
         }
-        log.debug("Getting film with ID {}", id);
+        log.debug("Getting film with ID {}", filmId);
         return mapper.mapToFilmDto(film.get());
     }
 
@@ -118,4 +118,14 @@ public class FilmService {
             list.add(mapper.mapToFilmDto(f));
         return list;
     }
+
+    public void deleteFilm(long filmId) {
+        if (!filmStorage.checkFilmExists(filmId)) {
+            log.warn("Deleting film failed: film with ID {} not found", filmId);
+            throw new FilmNotFoundException("Error when deleting film", filmId);
+        }
+        log.debug("Deleting film with ID {}", filmId);
+        filmStorage.deleteFilm(filmId);
+    }
+
 }
