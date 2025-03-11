@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
@@ -14,9 +16,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.MpaRating;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.repository.DbFilmStorage;
 import ru.yandex.practicum.filmorate.repository.DbLikesStorage;
 import ru.yandex.practicum.filmorate.repository.DbUserStorage;
@@ -66,7 +66,7 @@ public class DbLikesStorageTest {
     }
 
     private Film createFilm(String name, String description, LocalDate releaseDate, int duration,
-        int mpaId, String mpaName) {
+                            int mpaId, String mpaName, Set<Genre> genres, Set<Director> directors) {
         Film film = new Film();
         film.setName(name);
         film.setDescription(description);
@@ -77,6 +77,7 @@ public class DbLikesStorageTest {
         mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
         film.setGenres(new HashSet<>());
+        film.setDirector(new HashSet<>());
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
         return film;
@@ -87,7 +88,7 @@ public class DbLikesStorageTest {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
-            "G");
+            "G", new HashSet<>(), new HashSet<>());
 
         likesStorage.addLike(user.getId(), film.getId());
         assertThat(jdbc.queryForList("SELECT user_id FROM likes WHERE film_id = ?", Long.class,
@@ -99,7 +100,7 @@ public class DbLikesStorageTest {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
-            "G");
+            "G", new HashSet<>(), new HashSet<>());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film.getId());
 
         likesStorage.removeLike(user.getId(), film.getId());
@@ -112,9 +113,9 @@ public class DbLikesStorageTest {
         User user = createUser("user1@example.com", "user1login", "User 1",
             LocalDate.of(2000, 1, 1));
         Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
-            1, "G");
+            1, "G", new HashSet<>(), new HashSet<>());
         Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
-            2, "PG");
+            2, "PG", new HashSet<>(), new HashSet<>());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film2.getId());
 
@@ -131,7 +132,7 @@ public class DbLikesStorageTest {
         User user2 = createUser("user2@example.com", "user2login", "User 2",
             LocalDate.of(2001, 2, 2));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
-            "G");
+            "G", new HashSet<>(), new HashSet<>());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film.getId());
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film.getId());
 
@@ -148,9 +149,9 @@ public class DbLikesStorageTest {
         User user2 = createUser("user2@example.com", "user2login", "User 2",
             LocalDate.of(2001, 2, 2));
         Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
-            1, "G");
+            1, "G",new HashSet<>(), new HashSet<>());
         Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
-            2, "PG");
+            2, "PG", new HashSet<>(), new HashSet<>());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
