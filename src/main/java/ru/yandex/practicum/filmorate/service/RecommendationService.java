@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,21 @@ public class RecommendationService {
 
         // Divide diff by freq
         diff.forEach((filmId1, innerMap) -> innerMap.replaceAll((filmId2, diffValue) -> {
-            Integer frequency = freq.get(filmId1).get(filmId2);
+            Map<Long, Integer> innerFreqMap = freq.get(filmId1);
+            if (innerFreqMap == null) {
+                log.warn("Unexpected null innerFreqMap for filmId1: {}", filmId1);
+                return Double.NaN;
+            }
+            Integer frequency = innerFreqMap.get(filmId2);
+            if (frequency == null) {
+                log.warn("Unexpected null frequency for filmId1: {}, filmId2: {}", filmId1,
+                    filmId2);
+                return Double.NaN;
+            }
+            if (frequency == 0) {
+                log.warn("Division by zero risk for filmId1: {}, filmId2: {}", filmId1, filmId2);
+                return Double.NaN;
+            }
             return diffValue / frequency;
         }));
 
@@ -123,7 +136,7 @@ public class RecommendationService {
         log.info("Diff and freq matrices updated for user {} and film {}", userId, filmId);
     }
 
-    public Collection<FilmDto> getRecommendations(long userId) {
+    public List<FilmDto> getRecommendations(long userId) {
         log.info("Getting recommendations for user {}", userId);
         // Load diff and freq
         Map<Long, Map<Long, Double>> diff = diffFreqStorage.loadDiff();
