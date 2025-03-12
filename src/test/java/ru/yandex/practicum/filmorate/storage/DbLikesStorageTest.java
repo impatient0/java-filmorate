@@ -1,4 +1,4 @@
-/*package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -162,4 +162,4 @@ public class DbLikesStorageTest {
         assertThat(popularFilms.get(0)).isEqualTo(film1);
         assertThat(popularFilms.get(1)).isEqualTo(film2);
     }
-}*/
+}
