@@ -208,7 +208,7 @@ public class FilmControllerTest {
     void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
         mockMvc.perform(delete(filmsURI + "/999999")).andExpect(status().isNotFound())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.message").value("Error when deleting film"))
+            .andExpect(jsonPath("$.error").value("Error when deleting film"))
             .andExpect(jsonPath("$.description").value("Film with ID 999999 not found"));
     }
 }
