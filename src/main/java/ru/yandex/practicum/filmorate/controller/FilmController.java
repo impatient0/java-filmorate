@@ -67,14 +67,6 @@ public class FilmController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedFilm);
     }
 
-    @GetMapping("/popular")
-    public ResponseEntity<Collection<FilmDto>> getPopularFilms(
-            @RequestParam(required = false, defaultValue = "10") int count) {
-        log.info("Request to get {} popular films received.", count);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(likesService.getPopularFilms(count));
-    }
-
     @GetMapping(value = "/director/{directorId}", params = {"sortBy"})
     public ResponseEntity<Collection<FilmDto>> getFilmById(@PathVariable long directorId, @RequestParam(value = "sortBy") Set<String> params) {
         log.info("Request to get films with director ID {} received.", directorId);

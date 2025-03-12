@@ -33,8 +33,8 @@ public class DbLikesStorage implements LikesStorage {
         + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
         + "LEFT JOIN directors d ON fd.director_id = d.director_id "
         + "ORDER BY f.film_id, g.genre_id";
-    private static final String GET_USERS_WHO_LIKED_FILM_QUERY = "SELECT u.* FROM users AS u RIGHT "
-        + "JOIN likes AS l ON u.user_id = l.user_id WHERE l.film_id = ?";  
+    private static final String GET_USERS_WHO_LIKED_FILM_QUERY = "SELECT u.* FROM users AS u RIGHT " +
+            "JOIN likes AS l ON u.user_id = l.user_id WHERE l.film_id = ?";
     private static final String GET_POPULAR_FILMS_QUERY =
             "WITH film_likes AS (SELECT film_id, COUNT(film_id) AS likes_count FROM likes GROUP BY film_id) " +
                     "SELECT f.film_id, f.name AS film_name, f.description, f.release_date, f.duration, " +
