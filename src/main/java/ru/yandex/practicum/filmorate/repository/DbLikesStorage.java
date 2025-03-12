@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -63,21 +62,21 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
 
     @Override
     public void addRating(long userId, long filmId, int rating) {
-        log.trace("Adding like from userId={} to filmId={}", userId, filmId);
-        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId);
-        log.trace("Like added, rows affected: {}", rowsAffected);
+        log.trace("Adding rating from userId={} to filmId={}", userId, filmId);
+        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId, rating);
+        log.trace("Rating added, rows affected: {}", rowsAffected);
     }
 
     @Override
     public void removeRating(long userId, long filmId) {
-        log.trace("Removing like from userId={} to filmId={}", userId, filmId);
+        log.trace("Removing rating from userId={} to filmId={}", userId, filmId);
         int rowsAffected = jdbc.update(REMOVE_RATING_QUERY, userId, filmId);
-        log.trace("Like removed, rows affected: {}", rowsAffected);
+        log.trace("Rating removed, rows affected: {}", rowsAffected);
     }
 
     @Override
     public List<Rating> getRatingsOfFilm(long filmId) {
-        log.trace("Getting ratings of film {}", filmId);
+        log.trace("Getting ratings of filmId={}", filmId);
         List<Rating> ratings = getMultiple(GET_ALL_RATINGS_QUERY + " WHERE film_id = ?", filmId);
         log.trace("Found {} ratings", ratings.size());
         return ratings;
@@ -85,7 +84,10 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
 
     @Override
     public List<Rating> getRatingsByUser(long userId) {
-        return getMultiple(GET_ALL_RATINGS_QUERY + " WHERE user_id = ?", userId);
+        log.trace("Getting ratings of userId={}", userId);
+        List<Rating> ratings = getMultiple(GET_ALL_RATINGS_QUERY + " WHERE user_id = ?", userId);
+        log.trace("Found {} ratings", ratings.size());
+        return ratings;
     }
 
     @Override
@@ -95,15 +97,15 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
 
     @Override
     public List<Film> getFilmsRatedByUser(long userId) {
-        log.info("Fetching liked films for userId={}", userId);
+        log.trace("Fetching rated films for userId={}", userId);
         List<Film> films = jdbc.query(GET_RATED_FILMS_QUERY, filmExtractor, userId);
-        log.debug("Found {} liked films for userId={}", films.size(), userId);
+        log.trace("Found {} rated films for userId={}", films == null ? 0 : films.size(), userId);
         return films;
     }
 
     @Override
     public List<User> getUsersWhoRatedFilm(long filmId) {
-        log.info("Fetching users who liked filmId={}", filmId);
+        log.trace("Fetching users who rated filmId={}", filmId);
         List<User> users = jdbc.query(GET_USERS_WHO_RATED_FILM_QUERY, userMapper, filmId);
         log.debug("Found {} users for filmId={}", users.size(), filmId);
         return users;
@@ -111,14 +113,19 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
 
     @Override
     public List<User> getUsersWhoRatedBothFilms(long filmId1, long filmId2) {
+        log.trace("Getting users who rated both films filmId1={} and filmId2={}", filmId1, filmId2);
+        List<User> users = jdbc.query(GET_USERS_WHO_RATED_BOTH_FILMS_QUERY, userMapper, filmId1,
+            filmId2);
+        log.trace("Found {} users", users.size());
         return jdbc.query(GET_USERS_WHO_RATED_BOTH_FILMS_QUERY, userMapper, filmId1, filmId2);
     }
 
     @Override
     public List<Film> getPopularFilms(long count, Integer genreId, Integer year) {
-        log.info("Fetching popular films with count={}, genreId={}, year={}", count, genreId, year);
+        log.trace("Fetching popular films with count={}, genreId={}, year={}", count, genreId,
+            year);
         List<Film> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year, genreId, genreId, count);
-        log.debug("Found {} popular films", films.size());
+        log.trace("Found {} popular films", films == null ? 0 : films.size());
         return films;
     }
 }
