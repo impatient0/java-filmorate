@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 
 @Repository
 @RequiredArgsConstructor
-@SuppressWarnings("usused")
+@SuppressWarnings("unused")
 public class DbDiffFreqStorage implements DiffFreqStorage {
 
     private static final String MERGE_DIFF_QUERY =
@@ -37,7 +37,7 @@ public class DbDiffFreqStorage implements DiffFreqStorage {
         try {
             jdbc.batchUpdate(MERGE_DIFF_QUERY, batchArgs);
         } catch (DataAccessException e) {
-            throw new InternalServerException("Failed to save diff.");
+            throw new InternalServerException("Failed to save diff.", e);
         }
     }
 
@@ -50,7 +50,7 @@ public class DbDiffFreqStorage implements DiffFreqStorage {
         try {
             jdbc.batchUpdate(MERGE_FREQ_QUERY, batchArgs);
         } catch (DataAccessException e) {
-            throw new RuntimeException("Failed to save freq.", e);
+            throw new InternalServerException("Failed to save freq.", e);
         }
     }
 
