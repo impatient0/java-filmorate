@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,9 +50,10 @@ public class LikesService {
         likesStorage.removeLike(userId, filmId);
     }
 
-    public List<FilmDto> getPopularFilms(int count) {
-        log.debug("Getting {} most popular films", count);
-        return likesStorage.getPopularFilms(count).stream().map(filmMapper::mapToFilmDto)
-            .collect(Collectors.toList());
+    public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
+        log.debug("Getting {} most popular films with genreId={} and year={}", count, genreId, year);
+        return likesStorage.getPopularFilms(count, genreId, year).stream()
+                .map(filmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 }

@@ -26,9 +26,9 @@ import ru.yandex.practicum.filmorate.service.LikesService;
 
 @RestController
 @RequestMapping("/films")
-@Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
+@Slf4j
 public class FilmController {
 
     private final FilmService filmService;
@@ -90,4 +90,15 @@ public class FilmController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/popular")
+    public ResponseEntity<Collection<FilmDto>> getPopularFilms(
+            @RequestParam(defaultValue = "10") int count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
+        log.info("Request to get {} popular films for genre ID {} and year {} received.", count, genreId, year);
+        Collection<FilmDto> films = likesService.getPopularFilms(count, genreId, year);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(films);
+    }
 }
