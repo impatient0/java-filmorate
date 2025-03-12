@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.User;
 
 @Repository
 @Primary
-@SuppressWarnings("unused")
 @Slf4j
 public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorage {
 

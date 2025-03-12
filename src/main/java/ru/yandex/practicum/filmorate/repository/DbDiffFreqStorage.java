@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 
 @Repository
 @RequiredArgsConstructor
-@SuppressWarnings("usused")
 public class DbDiffFreqStorage implements DiffFreqStorage {
 
     private static final String MERGE_DIFF_QUERY =

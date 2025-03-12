@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 @Repository
 @Primary
-@SuppressWarnings("unused")
 public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
 
     private static final String CHECK_EXISTS_QUERY =

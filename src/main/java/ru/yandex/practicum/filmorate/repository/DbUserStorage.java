@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.User;
 
 @Repository
 @Primary
-@SuppressWarnings("unused")
 public class DbUserStorage extends DbBaseStorage<User> implements UserStorage {
 
     private static final String CHECK_EXISTS_QUERY =
