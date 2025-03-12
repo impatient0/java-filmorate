@@ -28,7 +28,7 @@ public class DirectorService {
         log.debug("Getting director with ID {}", id);
         return directorStorage.getDirectorById(id).orElseThrow(() -> {
             log.warn("Retrieving director failed: director with ID {} not found", id);
-            return new DirectorNotFoundException("Error when retrieving director", id);
+            return new DirectorNotFoundException("Error when retrieving director", id, "Director was not found");
         });
     }
 
@@ -42,7 +42,7 @@ public class DirectorService {
         if (!violations.isEmpty()) {
             String violationMessage = violations.iterator().next().getMessage();
             log.warn("Adding director failed: {}", violationMessage);
-            throw new FilmValidationException("Error when creating new director", violationMessage);
+            throw new DirectorValidationException("Error when creating new director", violationMessage);
         }
         Director director = mapper.mapToDirectorModel(newDirectorRequest);
         long directorId = directorStorage.addDirector(director);
@@ -54,14 +54,14 @@ public class DirectorService {
     public DirectorDto updateDirector(UpdateDirectorRequest updateDirectorRequest) {
         Director director = directorStorage.getDirectorById(updateDirectorRequest.getId()).orElseThrow(() -> {
             log.warn("Updating director failed: director with ID {} not found", updateDirectorRequest.getId());
-            return new FilmNotFoundException("Error when updating director", updateDirectorRequest.getId());
+            return new DirectorNotFoundException("Error when retrieving director", updateDirectorRequest.getId(), "Director was not found");
         });
         Set<ConstraintViolation<UpdateDirectorRequest>> violations = validator.validate(
                 updateDirectorRequest);
         if (!violations.isEmpty()) {
             String violationMessage = violations.iterator().next().getMessage();
-            log.warn("Updating film failed: {}", violationMessage);
-            throw new FilmValidationException("Error when updating film", violationMessage);
+            log.warn("Updating director failed: {}", violationMessage);
+            throw new DirectorValidationException("Error when updating director", violationMessage);
         }
         log.debug("Updating director with ID {}: {}", director.getId(), director);
         director = mapper.updateDirectorFields(director, updateDirectorRequest);
