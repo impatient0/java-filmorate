@@ -235,7 +235,7 @@ public class UserControllerTest {
     void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
         mockMvc.perform(delete(usersURI + "/999999")).andExpect(status().isNotFound())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.message").value("Error when deleting user"))
+            .andExpect(jsonPath("$.error").value("Error when deleting user"))
             .andExpect(jsonPath("$.description").value("User with ID 999999 not found"));
     }
 }
