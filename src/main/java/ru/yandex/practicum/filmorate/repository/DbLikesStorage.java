@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -13,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.User;
 @Repository
 @Primary
 @SuppressWarnings("unused")
+@Slf4j
 public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorage {
 
     private static final String SAVE_RATING_QUERY =
@@ -33,14 +36,19 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
         + "user_id FROM ratings WHERE film_id = ?) SELECT u.* FROM users AS u WHERE u.user_id IN "
         + "(SELECT user_id FROM UsersWhoRatedFilm1 INTERSECT SELECT user_id FROM "
         + "UsersWhoRatedFilm2)";
-    private static final String GET_POPULAR_FILMS_QUERY = "WITH film_ratings AS (SELECT film_id, "
-        + "COUNT(film_id) AS ratings_count FROM ratings GROUP BY film_id) SELECT f.film_id, f"
-        + ".name AS film_name, f.description, f.release_date, f.duration, m.mpa_id, m.name AS "
-        + "mpa_name, g.genre_id, g.name AS genre_name, film_ratings.ratings_count FROM films f "
-        + "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id LEFT JOIN film_genres fg ON f.film_id"
-        + " = fg.film_id LEFT JOIN genres g ON fg.genre_id = g.genre_id LEFT JOIN film_ratings ON f"
-        + ".film_id = film_ratings.film_id ORDER BY film_ratings.ratings_count DESC, f.film_id, g"
-        + ".genre_id LIMIT ?";
+    private static final String GET_POPULAR_FILMS_QUERY = "WITH film_ratings AS (SELECT film_id, COUNT(film_id) AS ratings_count FROM ratings GROUP BY film_id) " +
+        "SELECT f.film_id, f.name AS film_name, f.description, f.release_date, f.duration, " +
+        "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, " +
+        "COALESCE(film_ratings.ratings_count, 0) AS ratings_count " +
+        "FROM films f " +
+        "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id " +
+        "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
+        "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
+        "LEFT JOIN film_ratings ON f.film_id = film_ratings.film_id " +
+        "WHERE (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?) " +
+        "AND (? IS NULL OR fg.genre_id = ?) " +
+        "ORDER BY COALESCE(film_ratings.ratings_count, 0) DESC, f.film_id, g.genre_id " +
+        "LIMIT ?";
     private static final String GET_ALL_RATINGS_QUERY = "SELECT * FROM ratings";
 
     private final RowMapper<User> userMapper;
@@ -55,17 +63,24 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
 
     @Override
     public void addRating(long userId, long filmId, int rating) {
-        jdbc.update(SAVE_RATING_QUERY, userId, filmId, rating);
+        log.trace("Adding like from userId={} to filmId={}", userId, filmId);
+        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId);
+        log.trace("Like added, rows affected: {}", rowsAffected);
     }
 
     @Override
     public void removeRating(long userId, long filmId) {
-        jdbc.update(REMOVE_RATING_QUERY, userId, filmId);
+        log.trace("Removing like from userId={} to filmId={}", userId, filmId);
+        int rowsAffected = jdbc.update(REMOVE_RATING_QUERY, userId, filmId);
+        log.trace("Like removed, rows affected: {}", rowsAffected);
     }
 
     @Override
     public List<Rating> getRatingsOfFilm(long filmId) {
-        return getMultiple(GET_ALL_RATINGS_QUERY + " WHERE film_id = ?", filmId);
+        log.trace("Getting ratings of film {}", filmId);
+        List<Rating> ratings = getMultiple(GET_ALL_RATINGS_QUERY + " WHERE film_id = ?", filmId);
+        log.trace("Found {} ratings", ratings.size());
+        return ratings;
     }
 
     @Override
@@ -80,12 +95,18 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
 
     @Override
     public List<Film> getFilmsRatedByUser(long userId) {
-        return jdbc.query(GET_RATED_FILMS_QUERY, filmExtractor, userId);
+        log.info("Fetching liked films for userId={}", userId);
+        List<Film> films = jdbc.query(GET_RATED_FILMS_QUERY, filmExtractor, userId);
+        log.debug("Found {} liked films for userId={}", films.size(), userId);
+        return films;
     }
 
     @Override
     public List<User> getUsersWhoRatedFilm(long filmId) {
-        return jdbc.query(GET_USERS_WHO_RATED_FILM_QUERY, userMapper, filmId);
+        log.info("Fetching users who liked filmId={}", filmId);
+        List<User> users = jdbc.query(GET_USERS_WHO_RATED_FILM_QUERY, userMapper, filmId);
+        log.debug("Found {} users for filmId={}", users.size(), filmId);
+        return users;
     }
 
     @Override
@@ -94,7 +115,10 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     }
 
     @Override
-    public List<Film> getPopularFilms(long count) {
-        return jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, count);
+    public List<Film> getPopularFilms(long count, Integer genreId, Integer year) {
+        log.info("Fetching popular films with count={}, genreId={}, year={}", count, genreId, year);
+        List<Film> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year, genreId, genreId, count);
+        log.debug("Found {} popular films", films.size());
+        return films;
     }
 }

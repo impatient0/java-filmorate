@@ -29,7 +29,7 @@ import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({DbLikesStorage.class, DbUserStorage.class, DbFilmStorage.class, UserRowMapper.class,
-    FilmWithGenresDataMapper.class, RatingRowMapper.class})
+        FilmWithGenresDataMapper.class, RatingRowMapper.class})
 public class DbLikesStorageTest {
 
     private static final String DELETE_LIKES_QUERY = "DELETE FROM ratings";
@@ -213,22 +213,27 @@ public class DbLikesStorageTest {
 
     @Test
     void testGetPopularFilms() {
-        User user1 = createUser("user1@example.com", "user1login", "User 1",
-            LocalDate.of(2000, 1, 1));
-        User user2 = createUser("user2@example.com", "user2login", "User 2",
-            LocalDate.of(2001, 2, 2));
-        Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
-            1, "G");
-        Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
-            2, "PG");
+        User user1 = createUser("user1@example.com", "user1login", "User 1", LocalDate.of(2000, 1, 1));
+        User user2 = createUser("user2@example.com", "user2login", "User 2", LocalDate.of(2001, 2, 2));
+
+        Film film1 = createFilm("Film 1", "Description 1", LocalDate.of(2000, 1, 1), 120, 1, "G"); // Жанр: Комедия
+        Film film2 = createFilm("Film 2", "Description 2", LocalDate.of(2001, 2, 2), 150, 2, "PG"); // Жанр: Драма
+        Film film3 = createFilm("Film 3", "Description 3", LocalDate.of(2001, 3, 3), 90, 3, "PG-13"); // Без жанра
+
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
 
-        List<Film> popularFilms = likesStorage.getPopularFilms(2);
+        List<Film> popularFilmsNoFilter = (List<Film>) likesStorage.getPopularFilms(3, null, null);
+        assertThat(popularFilmsNoFilter).hasSize(3);
+        assertThat(popularFilmsNoFilter.get(0).getId()).isEqualTo(film1.getId()); //2 лайка
+        assertThat(popularFilmsNoFilter.get(1).getId()).isEqualTo(film2.getId()); //1 лайк
+        assertThat(popularFilmsNoFilter.get(2).getId()).isEqualTo(film3.getId()); //0 лайков
 
-        assertThat(popularFilms.size()).isEqualTo(2);
-        assertThat(popularFilms.get(0)).isEqualTo(film1);
-        assertThat(popularFilms.get(1)).isEqualTo(film2);
+        List<Film> popularFilmsByYear = (List<Film>) likesStorage.getPopularFilms(2, null, 2001);
+        assertThat(popularFilmsByYear).hasSize(2);
+        assertThat(popularFilmsByYear.get(0).getId()).isEqualTo(film2.getId()); //1 лайк
+        assertThat(popularFilmsByYear.get(1).getId()).isEqualTo(film3.getId()); //0 лайков
+
     }
 }
