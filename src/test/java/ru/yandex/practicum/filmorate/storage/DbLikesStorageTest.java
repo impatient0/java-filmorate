@@ -224,13 +224,13 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
 
-        List<Film> popularFilmsNoFilter = (List<Film>) likesStorage.getPopularFilms(3, null, null);
+        List<Film> popularFilmsNoFilter = likesStorage.getPopularFilms(3, null, null);
         assertThat(popularFilmsNoFilter).hasSize(3);
         assertThat(popularFilmsNoFilter.get(0).getId()).isEqualTo(film1.getId()); //2 лайка
         assertThat(popularFilmsNoFilter.get(1).getId()).isEqualTo(film2.getId()); //1 лайк
         assertThat(popularFilmsNoFilter.get(2).getId()).isEqualTo(film3.getId()); //0 лайков
 
-        List<Film> popularFilmsByYear = (List<Film>) likesStorage.getPopularFilms(2, null, 2001);
+        List<Film> popularFilmsByYear = likesStorage.getPopularFilms(2, null, 2001);
         assertThat(popularFilmsByYear).hasSize(2);
         assertThat(popularFilmsByYear.get(0).getId()).isEqualTo(film2.getId()); //1 лайк
         assertThat(popularFilmsByYear.get(1).getId()).isEqualTo(film3.getId()); //0 лайков
