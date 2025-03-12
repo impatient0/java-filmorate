@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
 @Repository
+@SuppressWarnings("unused")
 public class DbMpaRatingStorage extends DbBaseStorage<MpaRating> implements MpaRatingStorage {
 
     private static final String CHECK_EXISTS_QUERY =

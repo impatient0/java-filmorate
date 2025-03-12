@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 @Repository
+@SuppressWarnings("unused")
 public class DbGenreStorage extends DbBaseStorage<Genre> implements GenreStorage {
 
     private static final String CHECK_EXISTS_QUERY =

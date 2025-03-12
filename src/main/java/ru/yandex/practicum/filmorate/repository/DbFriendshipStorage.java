@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 @Repository
+@SuppressWarnings("unused")
 public class DbFriendshipStorage extends DbBaseStorage<User> implements FriendshipStorage {
 
     private static final RowMapper<FriendshipStatus> friendshipStatusRowMapper = (rs, rowNum) -> {
