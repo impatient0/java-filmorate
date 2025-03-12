@@ -7,8 +7,11 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.repository.mappers.DiffRow;
+import ru.yandex.practicum.filmorate.repository.mappers.FreqRow;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,6 +30,8 @@ public class DbDiffFreqStorage implements DiffFreqStorage {
         "SELECT film_id1, film_id2, freq_value " + "FROM item_freq";
 
     private final JdbcTemplate jdbc;
+    private final RowMapper<DiffRow> diffRowRowMapper;
+    private final RowMapper<FreqRow> freqRowRowMapper;
 
     @Override
     public void saveDiff(Map<Long, Map<Long, Double>> diff) {
@@ -57,11 +62,11 @@ public class DbDiffFreqStorage implements DiffFreqStorage {
     @Override
     public Map<Long, Map<Long, Double>> loadDiff() {
         Map<Long, Map<Long, Double>> diff = new HashMap<>();
-        List<Map<String, Object>> rows = jdbc.queryForList(LOAD_DIFF_QUERY);
-        for (Map<String, Object> row : rows) {
-            long filmId1 = (Long) row.get("film_id1");
-            long filmId2 = (Long) row.get("film_id2");
-            double diffValue = (Double) row.get("diff_value");
+        List<DiffRow> rows = jdbc.query(LOAD_DIFF_QUERY, diffRowRowMapper);
+        for (DiffRow row : rows) {
+            long filmId1 = row.getFilmId1();
+            long filmId2 = row.getFilmId2();
+            double diffValue = row.getDiffValue();
 
             diff.computeIfAbsent(filmId1, k -> new HashMap<>()).put(filmId2, diffValue);
         }
@@ -71,11 +76,11 @@ public class DbDiffFreqStorage implements DiffFreqStorage {
     @Override
     public Map<Long, Map<Long, Integer>> loadFreq() {
         Map<Long, Map<Long, Integer>> freq = new HashMap<>();
-        List<Map<String, Object>> rows = jdbc.queryForList(LOAD_FREQ_QUERY);
-        for (Map<String, Object> row : rows) {
-            long filmId1 = (Long) row.get("film_id1");
-            long filmId2 = (Long) row.get("film_id2");
-            int freqValue = (Integer) row.get("freq_value");
+        List<FreqRow> rows = jdbc.query(LOAD_FREQ_QUERY, freqRowRowMapper);
+        for (FreqRow row : rows) {
+            long filmId1 = row.getFilmId1();
+            long filmId2 = row.getFilmId2();
+            int freqValue = row.getFreqValue();
 
             freq.computeIfAbsent(filmId1, k -> new HashMap<>()).put(filmId2, freqValue);
         }
