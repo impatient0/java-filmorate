@@ -28,7 +28,7 @@ public class DirectorService {
         log.debug("Getting director with ID {}", id);
         return directorStorage.getDirectorById(id).orElseThrow(() -> {
             log.warn("Retrieving director failed: director with ID {} not found", id);
-            return new DirectorNotFoundException("Error when retrieving director", id, "Director was not found");
+            return new DirectorNotFoundException("Error when retrieving director", id);
         });
     }
 
@@ -54,7 +54,7 @@ public class DirectorService {
     public DirectorDto updateDirector(UpdateDirectorRequest updateDirectorRequest) {
         Director director = directorStorage.getDirectorById(updateDirectorRequest.getId()).orElseThrow(() -> {
             log.warn("Updating director failed: director with ID {} not found", updateDirectorRequest.getId());
-            return new DirectorNotFoundException("Error when retrieving director", updateDirectorRequest.getId(), "Director was not found");
+            return new DirectorNotFoundException("Error when retrieving director", updateDirectorRequest.getId());
         });
         Set<ConstraintViolation<UpdateDirectorRequest>> violations = validator.validate(
                 updateDirectorRequest);

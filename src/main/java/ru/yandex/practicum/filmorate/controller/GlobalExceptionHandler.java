@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
-import ru.yandex.practicum.filmorate.dto.ErrorMessageEspeciallyForDirector;
 import ru.yandex.practicum.filmorate.exception.*;
 
 @RestControllerAdvice
@@ -37,7 +36,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class,
-        GenreNotFoundException.class, MpaRatingNotFoundException.class})
+        GenreNotFoundException.class, MpaRatingNotFoundException.class, DirectorNotFoundException.class})
     public ResponseEntity<ErrorMessage> handleNotFoundException(final NotFoundException e) {
         log.warn("Encountered {}: returning 404 Not Found. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
@@ -45,16 +44,6 @@ public class GlobalExceptionHandler {
             String.format("%s with ID %d not found", e.getEntityType().getSimpleName(), e.getId()));
         return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON)
             .body(errorMessage);
-    }
-
-    @ExceptionHandler({DirectorNotFoundException.class})
-    public ResponseEntity<ErrorMessageEspeciallyForDirector> handleDirectorNotFoundException(final NotFoundExceptionForDirector e) {
-        log.warn("Encountered {}: returning 404 Not Found. Message: {}",
-                e.getClass().getSimpleName(), e.getMessage());
-        ErrorMessageEspeciallyForDirector errorMessage = new ErrorMessageEspeciallyForDirector(e.getMessage(),
-                String.format("%s with ID %d not found", e.getEntityType().getSimpleName(), e.getId()), e.getError());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON)
-                .body(errorMessage);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
