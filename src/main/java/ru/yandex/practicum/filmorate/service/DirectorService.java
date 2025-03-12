@@ -11,10 +11,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.NewDirectorRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateDirectorRequest;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmValidationException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.mapper.DirectorMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.repository.DirectorStorage;
@@ -31,7 +28,7 @@ public class DirectorService {
         log.debug("Getting director with ID {}", id);
         return directorStorage.getDirectorById(id).orElseThrow(() -> {
             log.warn("Retrieving director failed: director with ID {} not found", id);
-            return new GenreNotFoundException("Error when retrieving director", id);
+            return new DirectorNotFoundException("Error when retrieving director", id);
         });
     }
 
