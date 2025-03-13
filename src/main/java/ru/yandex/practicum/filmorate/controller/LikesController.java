@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.service.LikesService;
 
 @RestController
-@RequestMapping("/films/{id}/like/{userId}")
+@RequestMapping("/films/{id}/like/{userId}/{ratingValue}")
 @RequiredArgsConstructor
 @Slf4j
 @SuppressWarnings("unused")
@@ -20,16 +20,17 @@ public class LikesController {
     private final LikesService likesService;
 
     @PutMapping
-    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Void> addRating(@PathVariable long id, @PathVariable long userId,
+        @PathVariable int ratingValue) {
         log.info("Request to add like from user {} to film {} received.", userId, id);
-        likesService.likeFilm(userId, id);
+        likesService.rateFilm(userId, id, ratingValue);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> removeLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Void> removeRating(@PathVariable long id, @PathVariable long userId) {
         log.info("Request to remove like from user {} to film {} received.", userId, id);
-        likesService.unlikeFilm(userId, id);
+        likesService.unrateFilm(userId, id);
         return ResponseEntity.ok().build();
     }
 

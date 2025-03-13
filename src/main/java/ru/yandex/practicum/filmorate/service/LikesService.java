@@ -24,30 +24,30 @@ public class LikesService {
     private final FilmMapper filmMapper;
     private final RecommendationService recommendationService;
 
-    public void likeFilm(long userId, long filmId) {
+    public void rateFilm(long userId, long filmId, int ratingValue) {
         if (userStorage.getUserById(userId).isEmpty()) {
-            log.warn("Liking film failed: user with ID {} not found", userId);
-            throw new UserNotFoundException("Error when liking film", userId);
+            log.warn("Rating film failed: user with ID {} not found", userId);
+            throw new UserNotFoundException("Error when rating film", userId);
         }
         if (filmStorage.getFilmById(filmId).isEmpty()) {
-            log.warn("Liking film failed: film with ID {} not found", filmId);
-            throw new FilmNotFoundException("Error when liking film", filmId);
+            log.warn("Rating film failed: film with ID {} not found", filmId);
+            throw new FilmNotFoundException("Error when rating film", filmId);
         }
-        log.debug("User with ID {} likes film with ID {}", userId, filmId);
+        log.debug("User with ID {} rates film with ID {}", userId, filmId);
         likesStorage.addRating(userId, filmId, 1);
-        recommendationService.updateDiffAndFreq(userId, filmId, 1);
+        recommendationService.updateDiffAndFreq(userId, filmId, ratingValue);
     }
 
-    public void unlikeFilm(long userId, long filmId) {
+    public void unrateFilm(long userId, long filmId) {
         if (userStorage.getUserById(userId).isEmpty()) {
             log.warn("Unliking film failed: user with ID {} not found", userId);
-            throw new UserNotFoundException("Error when unliking film", userId);
+            throw new UserNotFoundException("Error when unrating film", userId);
         }
         if (filmStorage.getFilmById(filmId).isEmpty()) {
-            log.warn("Unliking film failed: film with ID {} not found", filmId);
-            throw new FilmNotFoundException("Error when unliking film", filmId);
+            log.warn("Unrating film failed: film with ID {} not found", filmId);
+            throw new FilmNotFoundException("Error when unrating film", filmId);
         }
-        log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
+        log.debug("User with ID {} unrates film with ID {}", userId, filmId);
         likesStorage.removeRating(userId, filmId);
         recommendationService.updateDiffAndFreq(userId, filmId, -1);
     }

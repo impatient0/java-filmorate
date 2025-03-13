@@ -88,7 +88,8 @@ public class RecommendationControllerTest {
 
     private void likeFilm(long userId, long filmId) {
         HttpEntity<Void> requestEntity = new HttpEntity<>(null);
-        restTemplate.exchange(FILMS_URL + "/" + filmId + LIKES_URL + "/" + userId, HttpMethod.PUT,
+        restTemplate.exchange(FILMS_URL + "/" + filmId + LIKES_URL + "/" + userId + "/10",
+            HttpMethod.PUT,
             requestEntity, Void.class);
     }
 
