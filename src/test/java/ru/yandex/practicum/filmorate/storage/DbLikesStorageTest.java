@@ -15,12 +15,14 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.DbFilmStorage;
 import ru.yandex.practicum.filmorate.repository.DbLikesStorage;
 import ru.yandex.practicum.filmorate.repository.DbUserStorage;
+import ru.yandex.practicum.filmorate.repository.mappers.FilmWithAvgRatingDataMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.FilmWithGenresDataMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.RatingRowMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
@@ -29,7 +31,7 @@ import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({DbLikesStorage.class, DbUserStorage.class, DbFilmStorage.class, UserRowMapper.class,
-    FilmWithGenresDataMapper.class, RatingRowMapper.class})
+    FilmWithGenresDataMapper.class, FilmWithAvgRatingDataMapper.class, RatingRowMapper.class})
 public class DbLikesStorageTest {
 
     private static final String DELETE_LIKES_QUERY = "DELETE FROM ratings";
@@ -170,10 +172,10 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film2.getId());
 
-        Collection<Film> likedFilms = likesStorage.getFilmsRatedByUser(user.getId());
+        Collection<FilmWithRating> likedFilms = likesStorage.getFilmsRatedByUser(user.getId());
 
         assertThat(likedFilms.size()).isEqualTo(2);
-        assertThat(likedFilms).contains(film1, film2);
+        assertThat(likedFilms.stream().map(FilmWithRating::getFilm)).contains(film1, film2);
     }
 
     @Test
@@ -225,10 +227,10 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
 
-        List<Film> popularFilms = likesStorage.getPopularFilms(2);
+        List<FilmWithRating> popularFilms = likesStorage.getPopularFilms(2);
 
         assertThat(popularFilms.size()).isEqualTo(2);
-        assertThat(popularFilms.get(0)).isEqualTo(film1);
-        assertThat(popularFilms.get(1)).isEqualTo(film2);
+        assertThat(popularFilms.get(0).getFilm()).isEqualTo(film1);
+        assertThat(popularFilms.get(1).getFilm()).isEqualTo(film2);
     }
 }

@@ -33,8 +33,9 @@ public class LikesService {
             log.warn("Rating film failed: film with ID {} not found", filmId);
             throw new FilmNotFoundException("Error when rating film", filmId);
         }
-        log.debug("User with ID {} rates film with ID {}", userId, filmId);
-        likesStorage.addRating(userId, filmId, 1);
+        log.debug("User with ID {} gives film with ID {} a rating of {}", userId, filmId,
+            ratingValue);
+        likesStorage.addRating(userId, filmId, ratingValue);
         recommendationService.updateDiffAndFreq(userId, filmId, ratingValue);
     }
 

@@ -18,4 +18,5 @@ public class FilmDto {
     private int duration;
     private MpaRating mpa;
     private Set<Genre> genres;
+    private Double rate;
 }

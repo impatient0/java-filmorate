@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapperImpl;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
@@ -41,7 +42,7 @@ public class FilmService {
     }
 
     public FilmDto getFilmById(long filmId) {
-        Optional<Film> film = filmStorage.getFilmById(filmId);
+        Optional<FilmWithRating> film = filmStorage.getFilmById(filmId);
         if (film.isEmpty()) {
             log.warn("Getting film failed: film with ID {} not found", filmId);
             throw new FilmNotFoundException("Error when getting film", filmId);
@@ -80,7 +81,7 @@ public class FilmService {
         Film film = filmStorage.getFilmById(updateFilmRequest.getId()).orElseThrow(() -> {
             log.warn("Updating film failed: film with ID {} not found", updateFilmRequest.getId());
             return new FilmNotFoundException("Error when updating film", updateFilmRequest.getId());
-        });
+        }).getFilm();
         Set<ConstraintViolation<UpdateFilmRequest>> violations = validator.validate(
             updateFilmRequest);
         if (!violations.isEmpty()) {

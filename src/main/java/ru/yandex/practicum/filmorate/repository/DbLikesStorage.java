@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -20,34 +20,45 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     private static final String REMOVE_RATING_QUERY =
         "DELETE FROM ratings WHERE user_id = ? AND " + "film_id = ?";
     private static final String GET_RATED_FILMS_QUERY = "WITH film_ratings AS (SELECT film_id FROM "
-        + "ratings WHERE user_id = ?) SELECT f.film_id, f.name AS film_name, f.description, f"
-        + ".release_date, f.duration, m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS "
-        + "genre_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id LEFT JOIN "
-        + "film_genres fg ON f.film_id = fg.film_id LEFT JOIN genres g ON fg.genre_id = g"
-        + ".genre_id JOIN film_ratings ON f.film_id = film_ratings.film_id ORDER BY f.film_id, g"
-        + ".genre_id";
+        + "ratings WHERE user_id = ?), "
+        + "avg_film_ratings AS (SELECT film_id, AVG(rating_value) AS avg_rating FROM ratings "
+        + "GROUP BY film_id) "
+        + "SELECT " + "    f.film_id, " + "    f.name AS film_name, " + "    f.description, "
+        + "    f.release_date, " + "    f.duration, " + "    m.mpa_id, "
+        + "    m.name AS mpa_name, " + "    g.genre_id, " + "    g.name AS genre_name, "
+        + "    afr.avg_rating " + "FROM films f "
+        + "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
+        + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
+        + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
+        + "JOIN film_ratings ON f.film_id = film_ratings.film_id "
+        + "LEFT JOIN avg_film_ratings afr ON f.film_id = afr.film_id "
+        + "ORDER BY f.film_id, g.genre_id";
     private static final String GET_USERS_WHO_RATED_FILM_QUERY = "SELECT u.* FROM users AS u RIGHT "
         + "JOIN ratings AS r ON u.user_id = r.user_id WHERE r.film_id = ?";
-    private static final String GET_USERS_WHO_RATED_BOTH_FILMS_QUERY = "WITH UsersWhoRatedFilm1 "
-        + "AS (SELECT user_id FROM ratings WHERE film_id = ?), UsersWhoRatedFilm2 AS (SELECT "
-        + "user_id FROM ratings WHERE film_id = ?) SELECT u.* FROM users AS u WHERE u.user_id IN "
-        + "(SELECT user_id FROM UsersWhoRatedFilm1 INTERSECT SELECT user_id FROM "
-        + "UsersWhoRatedFilm2)";
-    private static final String GET_POPULAR_FILMS_QUERY = "WITH film_ratings AS (SELECT film_id, "
-        + "COUNT(film_id) AS ratings_count FROM ratings GROUP BY film_id) SELECT f.film_id, f"
-        + ".name AS film_name, f.description, f.release_date, f.duration, m.mpa_id, m.name AS "
-        + "mpa_name, g.genre_id, g.name AS genre_name, film_ratings.ratings_count FROM films f "
-        + "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id LEFT JOIN film_genres fg ON f.film_id"
-        + " = fg.film_id LEFT JOIN genres g ON fg.genre_id = g.genre_id LEFT JOIN film_ratings ON f"
-        + ".film_id = film_ratings.film_id ORDER BY film_ratings.ratings_count DESC, f.film_id, g"
-        + ".genre_id LIMIT ?";
+    private static final String GET_USERS_WHO_RATED_BOTH_FILMS_QUERY =
+        "WITH UsersWhoRatedFilm1  " + "AS (SELECT user_id FROM ratings WHERE film_id = ?), "
+            + "     UsersWhoRatedFilm2 AS (SELECT user_id FROM ratings WHERE film_id = ?) "
+            + "SELECT u.* " + "FROM users AS u " + "WHERE u.user_id IN ( " + "    SELECT user_id "
+            + "    FROM UsersWhoRatedFilm1 " + "    INTERSECT " + "    SELECT user_id "
+            + "    FROM UsersWhoRatedFilm2 " + ")";
+    private static final String GET_POPULAR_FILMS_QUERY =
+        "WITH avg_film_ratings AS (SELECT film_id, AVG(rating_value) "
+            + "AS avg_rating FROM ratings GROUP BY film_id) " + "SELECT " + "    f.film_id, "
+            + "    f.name AS film_name, " + "    f.description, " + "    f.release_date, "
+            + "    f.duration, " + "    m.mpa_id, " + "    m.name AS mpa_name, "
+            + "    g.genre_id, " + "    g.name AS genre_name, " + "    afr.avg_rating "
+            + "FROM films f " + "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
+            + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
+            + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
+            + "LEFT JOIN avg_film_ratings afr ON f.film_id = afr.film_id "
+            + "ORDER BY afr.avg_rating DESC, f.film_id, g.genre_id " + "LIMIT ?";
     private static final String GET_ALL_RATINGS_QUERY = "SELECT * FROM ratings";
 
     private final RowMapper<User> userMapper;
-    private final ResultSetExtractor<List<Film>> filmExtractor;
+    private final ResultSetExtractor<List<FilmWithRating>> filmExtractor;
 
     protected DbLikesStorage(JdbcTemplate jdbc, RowMapper<Rating> mapper,
-        RowMapper<User> userMapper, ResultSetExtractor<List<Film>> filmExtractor) {
+        RowMapper<User> userMapper, ResultSetExtractor<List<FilmWithRating>> filmExtractor) {
         super(jdbc, mapper);
         this.userMapper = userMapper;
         this.filmExtractor = filmExtractor;
@@ -79,7 +90,7 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     }
 
     @Override
-    public List<Film> getFilmsRatedByUser(long userId) {
+    public List<FilmWithRating> getFilmsRatedByUser(long userId) {
         return jdbc.query(GET_RATED_FILMS_QUERY, filmExtractor, userId);
     }
 
@@ -94,7 +105,7 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     }
 
     @Override
-    public List<Film> getPopularFilms(long count) {
+    public List<FilmWithRating> getPopularFilms(long count) {
         return jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, count);
     }
 }

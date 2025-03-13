@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.repository.DiffFreqStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
@@ -161,7 +161,7 @@ public class RecommendationService {
         }
 
         // Recommend top films
-        List<Film> recommendedFilms = predictedRatings.entrySet().stream()
+        List<FilmWithRating> recommendedFilms = predictedRatings.entrySet().stream()
             .sorted(Map.Entry.<Long, Double>comparingByValue().reversed()).map(Map.Entry::getKey)
             .map(filmStorage::getFilmById).flatMap(Optional::stream).limit(10)
             .collect(Collectors.toList());

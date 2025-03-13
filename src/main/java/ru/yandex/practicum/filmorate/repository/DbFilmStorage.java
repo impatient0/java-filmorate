@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.context.annotation.Primary;
@@ -9,6 +8,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 @Repository
@@ -18,18 +18,33 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
 
     private static final String CHECK_EXISTS_QUERY =
         "SELECT EXISTS (SELECT 1 FROM films WHERE " + "film_id = ?)";
-    private static final String GET_ALL_QUERY =
-        "SELECT f.film_id, " + "f.name AS film_name, f.description, f.release_date, f.duration, "
-            + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name "
-            + "FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
-            + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
-            + "LEFT JOIN genres g ON fg.genre_id = g.genre_id ORDER BY f.film_id, g.genre_id";
-    private static final String GET_BY_ID_QUERY =
-        "SELECT f.film_id, " + "f.name AS film_name, f.description, f.release_date, f.duration, "
-            + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name "
-            + "FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
-            + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
-            + "LEFT JOIN genres g ON fg.genre_id = g.genre_id WHERE f.film_id = ?";
+    private static final String GET_ALL_QUERY = "SELECT f.film_id, "
+        + "       f.name AS film_name, f.description, f.release_date, f.duration, "
+        + "       m.mpa_id, m.name AS mpa_name, " + "       g.genre_id, g.name AS genre_name, "
+        + "       COALESCE(AVG(r.rating_value), 0.0) AS avg_rating " +
+        // Calculate average rating, default to 0 if no ratings
+        "FROM films f " + "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
+        + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
+        + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
+        + "LEFT JOIN ratings r ON f.film_id = r.film_id " + // Join with ratings table
+        "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, m.mpa_id, m.name,"
+        + " g.genre_id, g.name "
+        + // Group by all non-aggregated columns
+        "ORDER BY f.film_id, g.genre_id";
+    private static final String GET_BY_ID_QUERY = "SELECT f.film_id, "
+        + "       f.name AS film_name, f.description, f.release_date, f.duration, "
+        + "       m.mpa_id, m.name AS mpa_name, " + "       g.genre_id, g.name AS genre_name, "
+        + "       COALESCE(AVG(r.rating_value), 0.0) AS avg_rating " +
+        // Calculate average rating, default to 0 if no ratings
+        "FROM films f " + "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
+        + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
+        + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
+        + "LEFT JOIN ratings r ON f.film_id = r.film_id " + // Join with ratings table
+        "WHERE f.film_id = ? "
+        + "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, m.mpa_id, m"
+        + ".name, g.genre_id, g.name "
+        + // Group by all non-aggregated columns
+        "ORDER BY f.film_id, g.genre_id";
     private static final String INSERT_QUERY =
         "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) "
             + "VALUES (?, ?, ?, ?, ?)";
@@ -41,9 +56,9 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
             + "mpa_rating_id = ? " + "WHERE film_id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
-    private final ResultSetExtractor<List<Film>> extractor;
+    private final ResultSetExtractor<List<FilmWithRating>> extractor;
 
-    public DbFilmStorage(JdbcTemplate jdbc, ResultSetExtractor<List<Film>> extractor) {
+    public DbFilmStorage(JdbcTemplate jdbc, ResultSetExtractor<List<FilmWithRating>> extractor) {
         super(jdbc, null);
         this.extractor = extractor;
     }
@@ -54,8 +69,8 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> getFilmById(long filmId) {
-        List<Film> resultList = jdbc.query(GET_BY_ID_QUERY, extractor, filmId);
+    public Optional<FilmWithRating> getFilmById(long filmId) {
+        List<FilmWithRating> resultList = jdbc.query(GET_BY_ID_QUERY, extractor, filmId);
         return CollectionUtils.isEmpty(resultList) ? Optional.empty()
             : Optional.of(resultList.getFirst());
     }
@@ -86,7 +101,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getAllFilms() {
+    public List<FilmWithRating> getAllFilms() {
         return jdbc.query(GET_ALL_QUERY, extractor);
     }
 
