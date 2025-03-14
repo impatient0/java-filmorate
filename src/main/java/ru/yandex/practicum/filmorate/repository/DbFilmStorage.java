@@ -85,11 +85,6 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
          WHERE film_id = ?
         """;
 
-    /*
-     * Запрос для получения общих фильмов.
-     * Здесь GROUP BY включает все поля фильма и отдельные поля жанра,
-     * а FilmWithGenresDataMapper объединяет строки с одинаковым film_id.
-     */
     private static final String GET_COMMON_FILMS_QUERY = """
         SELECT
             f.film_id,
@@ -115,11 +110,9 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         ORDER BY like_count DESC, f.film_id
         """;
 
-    // Используем один extractor (FilmWithGenresDataMapper), внедрённый через конструктор
     private final ResultSetExtractor<List<Film>> extractor;
 
     public DbFilmStorage(JdbcTemplate jdbc, ResultSetExtractor<List<Film>> extractor) {
-        // Передаем null во второй аргумент суперконструктора, так как мы используем наш extractor напрямую
         super(jdbc, null);
         this.extractor = extractor;
     }
@@ -182,12 +175,9 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
 
     @Override
     public Collection<Film> getCommonFilms(long userId, long friendId) {
-        log.debug("Executing SQL: {}", GET_COMMON_FILMS_QUERY);
-        log.debug("With parameters: userId={}, friendId={}", userId, friendId);
         return jdbc.query(GET_COMMON_FILMS_QUERY, extractor, userId, friendId);
     }
 
-    // Безопасное чтение LocalDate: если столбец возвращает null, возвращаем null вместо вызова toLocalDate()
     private LocalDate safeGetLocalDate(ResultSet rs, String columnName) {
         try {
             java.sql.Date date = rs.getDate(columnName);
