@@ -6,9 +6,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
 public class FilmMapperImpl implements FilmMapper {
 
