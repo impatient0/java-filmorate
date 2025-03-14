@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
             .body(errorMessage);
     }
 
-    @ExceptionHandler({FilmValidationException.class, UserValidationException.class})
+    @ExceptionHandler({FilmValidationException.class, UserValidationException.class, DirectorValidationException.class})
     public ResponseEntity<ErrorMessage> handleValidationException(final ValidationException e) {
         log.warn("Encountered {}: returning 400 Bad Request. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
