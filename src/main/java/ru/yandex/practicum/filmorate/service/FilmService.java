@@ -2,9 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,16 +11,15 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmValidationException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
-import ru.yandex.practicum.filmorate.mapper.FilmMapperImpl;
+import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +30,9 @@ public class FilmService {
     private final MpaRatingStorage mpaRatingStorage;
     private final GenreStorage genreStorage;
     private final Validator validator;
-    private final FilmMapperImpl mapper;
+    private final FilmMapper mapper;
+    private final DirectorStorage directorStorage;
+    private final UserStorage userStorage;
 
     public Collection<FilmDto> getAllFilms() {
         log.debug("Getting all films");
@@ -106,6 +106,19 @@ public class FilmService {
         return mapper.mapToFilmDto(film);
     }
 
+    public List<FilmDto> getFilmsByLikes(long directorId, Set<String> params) {
+        Collection<Film> film = filmStorage.getDirectorFilmsBylikes(directorId, params);
+        if (film.isEmpty()) {
+            log.warn("Getting films failed: TOP films with director ID {} not found", directorId);
+            throw new FilmNotFoundException("Error when getting films", directorId);
+        }
+        log.debug("Getting films with directorID {}", directorId);
+        List<FilmDto> list = new ArrayList<>();
+        for (Film f: film)
+            list.add(mapper.mapToFilmDto(f));
+        return list;
+    }
+
     public void deleteFilm(long filmId) {
         if (!filmStorage.checkFilmExists(filmId)) {
             log.warn("Deleting film failed: film with ID {} not found", filmId);
@@ -115,4 +128,30 @@ public class FilmService {
         filmStorage.deleteFilm(filmId);
     }
 
+    public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
+        if (!userStorage.checkUserExists(userId)) {
+            log.warn("User with ID {} not found", userId);
+            throw new UserNotFoundException("User not found", userId);
+        }
+        if (!userStorage.checkUserExists(friendId)) {
+            log.warn("Friend with ID {} not found", friendId);
+            throw new UserNotFoundException("Friend not found", friendId);
+        }
+
+        log.debug("Fetching common films for users {} and {}", userId, friendId);
+        Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        // 🔥 Логируем данные перед маппингом
+        log.debug("Fetched {} common films", commonFilms.size());
+        for (Film film : commonFilms) {
+            log.debug("Film: id={}, name={}, mpa={}, genres={}",
+                    film.getId(), film.getName(),
+                    film.getMpa() != null ? film.getMpa().getName() : "null",
+                    film.getGenres());
+        }
+
+        return commonFilms.stream()
+                .map(mapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
 }

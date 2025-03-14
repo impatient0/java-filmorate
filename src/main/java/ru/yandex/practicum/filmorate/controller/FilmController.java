@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,23 @@ public class FilmController {
         FilmDto updatedFilm = filmService.updateFilm(updateFilmRequest);
         log.info("Film with ID {} updated", updateFilmRequest.getId());
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedFilm);
+    }
+
+    @GetMapping("/common")
+    public ResponseEntity<Collection<FilmDto>> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId) {
+        log.info("Request to get common films for users {} and {}", userId, friendId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(filmService.getCommonFilms(userId, friendId));
+    }
+
+    @GetMapping(value = "/director/{directorId}", params = {"sortBy"})
+    public ResponseEntity<Collection<FilmDto>> getFilmById(@PathVariable long directorId, @RequestParam(value = "sortBy") Set<String> params) {
+        log.info("Request to get films with director ID {} received.", directorId);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+                .body(filmService.getFilmsByLikes(directorId, params));
     }
 
     @DeleteMapping("/{id}")

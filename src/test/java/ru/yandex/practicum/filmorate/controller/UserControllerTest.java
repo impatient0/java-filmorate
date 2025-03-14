@@ -82,7 +82,7 @@ public class UserControllerTest {
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when creating new user", actualResponse.getMessage());
+        assertEquals("Error when creating new user", actualResponse.getError());
         assertEquals("Invalid User data: E-mail must be valid.", actualResponse.getDescription());
     }
 
@@ -144,7 +144,7 @@ public class UserControllerTest {
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating user", actualResponse.getMessage());
+        assertEquals("Error when updating user", actualResponse.getError());
         assertEquals("User with ID -42 not found", actualResponse.getDescription());
     }
 
@@ -172,7 +172,7 @@ public class UserControllerTest {
             .andReturn();
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating user", actualResponse.getMessage());
+        assertEquals("Error when updating user", actualResponse.getError());
         assertEquals("Invalid User data: E-mail must be valid.", actualResponse.getDescription());
     }
 
@@ -235,7 +235,7 @@ public class UserControllerTest {
     void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
         mockMvc.perform(delete(usersURI + "/999999")).andExpect(status().isNotFound())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.message").value("Error when deleting user"))
+            .andExpect(jsonPath("$.error").value("Error when deleting user"))
             .andExpect(jsonPath("$.description").value("User with ID 999999 not found"));
     }
 }
