@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Set;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.validation.LaterThan;
@@ -23,4 +24,5 @@ public class NewFilmRequest {
     private String description;
     private MpaRating mpa;
     private Set<Genre> genres;
+    private Set<Director> directors;
 }
