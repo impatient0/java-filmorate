@@ -12,9 +12,9 @@
 		<relativePath/>
 		<version>3.4.2</version> <!-- lookup parent from repository -->
 	</parent>
-	<properties>
-		<java.version>21</java.version>
-	</properties>
+    <properties>
+        <java.version>21</java.version>
+    </properties>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<dependencies>

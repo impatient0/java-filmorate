@@ -4,8 +4,11 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+
 import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,14 +30,14 @@ import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({DbLikesStorage.class, DbUserStorage.class, DbFilmStorage.class, UserRowMapper.class,
-    FilmWithGenresDataMapper.class})
+        FilmWithGenresDataMapper.class})
 public class DbLikesStorageTest {
 
     private static final String DELETE_LIKES_QUERY = "DELETE FROM likes";
     private static final String DELETE_FILMS_QUERY = "DELETE FROM films";
     private static final String DELETE_USERS_QUERY = "DELETE FROM users";
     private static final String ADD_LIKE_QUERY =
-        "INSERT INTO likes (user_id, film_id) VALUES (?," + " ?)";
+            "INSERT INTO likes (user_id, film_id) VALUES (?," + " ?)";
     private final DbLikesStorage likesStorage;
     private final DbUserStorage userStorage;
     private final DbFilmStorage filmStorage;
@@ -66,7 +69,7 @@ public class DbLikesStorageTest {
     }
 
     private Film createFilm(String name, String description, LocalDate releaseDate, int duration,
-        int mpaId, String mpaName) {
+                            int mpaId, String mpaName) {
         Film film = new Film();
         film.setName(name);
         film.setDescription(description);
@@ -85,21 +88,21 @@ public class DbLikesStorageTest {
     @Test
     void testAddLike() {
         User user = createUser("user1@example.com", "user1login", "User 1",
-            LocalDate.of(2000, 1, 1));
+                LocalDate.of(2000, 1, 1));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
-            "G");
+                "G");
 
         likesStorage.addLike(user.getId(), film.getId());
         assertThat(jdbc.queryForList("SELECT user_id FROM likes WHERE film_id = ?", Long.class,
-            film.getId())).containsExactly(user.getId());
+                film.getId())).containsExactly(user.getId());
     }
 
     @Test
     void testRemoveLike() {
         User user = createUser("user1@example.com", "user1login", "User 1",
-            LocalDate.of(2000, 1, 1));
+                LocalDate.of(2000, 1, 1));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
-            "G");
+                "G");
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film.getId());
 
         likesStorage.removeLike(user.getId(), film.getId());
@@ -110,11 +113,11 @@ public class DbLikesStorageTest {
     @Test
     void testGetLikedFilms() {
         User user = createUser("user1@example.com", "user1login", "User 1",
-            LocalDate.of(2000, 1, 1));
+                LocalDate.of(2000, 1, 1));
         Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
-            1, "G");
+                1, "G");
         Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
-            2, "PG");
+                2, "PG");
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film2.getId());
 
@@ -127,11 +130,11 @@ public class DbLikesStorageTest {
     @Test
     void testGetUsersWhoLikedFilm() {
         User user1 = createUser("user1@example.com", "user1login", "User 1",
-            LocalDate.of(2000, 1, 1));
+                LocalDate.of(2000, 1, 1));
         User user2 = createUser("user2@example.com", "user2login", "User 2",
-            LocalDate.of(2001, 2, 2));
+                LocalDate.of(2001, 2, 2));
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
-            "G");
+                "G");
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film.getId());
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film.getId());
 
@@ -143,22 +146,27 @@ public class DbLikesStorageTest {
 
     @Test
     void testGetPopularFilms() {
-        User user1 = createUser("user1@example.com", "user1login", "User 1",
-            LocalDate.of(2000, 1, 1));
-        User user2 = createUser("user2@example.com", "user2login", "User 2",
-            LocalDate.of(2001, 2, 2));
-        Film film1 = createFilm("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120,
-            1, "G");
-        Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
-            2, "PG");
+        User user1 = createUser("user1@example.com", "user1login", "User 1", LocalDate.of(2000, 1, 1));
+        User user2 = createUser("user2@example.com", "user2login", "User 2", LocalDate.of(2001, 2, 2));
+
+        Film film1 = createFilm("Film 1", "Description 1", LocalDate.of(2000, 1, 1), 120, 1, "G"); // Жанр: Комедия
+        Film film2 = createFilm("Film 2", "Description 2", LocalDate.of(2001, 2, 2), 150, 2, "PG"); // Жанр: Драма
+        Film film3 = createFilm("Film 3", "Description 3", LocalDate.of(2001, 3, 3), 90, 3, "PG-13"); // Без жанра
+
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
 
-        List<Film> popularFilms = (List<Film>) likesStorage.getPopularFilms(2);
+        List<Film> popularFilmsNoFilter = (List<Film>) likesStorage.getPopularFilms(3, null, null);
+        assertThat(popularFilmsNoFilter).hasSize(3);
+        assertThat(popularFilmsNoFilter.get(0).getId()).isEqualTo(film1.getId()); //2 лайка
+        assertThat(popularFilmsNoFilter.get(1).getId()).isEqualTo(film2.getId()); //1 лайк
+        assertThat(popularFilmsNoFilter.get(2).getId()).isEqualTo(film3.getId()); //0 лайков
 
-        assertThat(popularFilms.size()).isEqualTo(2);
-        assertThat(popularFilms.get(0)).isEqualTo(film1);
-        assertThat(popularFilms.get(1)).isEqualTo(film2);
+        List<Film> popularFilmsByYear = (List<Film>) likesStorage.getPopularFilms(2, null, 2001);
+        assertThat(popularFilmsByYear).hasSize(2);
+        assertThat(popularFilmsByYear.get(0).getId()).isEqualTo(film2.getId()); //1 лайк
+        assertThat(popularFilmsByYear.get(1).getId()).isEqualTo(film3.getId()); //0 лайков
+
     }
 }
