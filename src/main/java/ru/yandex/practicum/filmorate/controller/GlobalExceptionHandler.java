@@ -8,14 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmValidationException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserValidationException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.*;
 
 @RestControllerAdvice
 @Slf4j
@@ -31,7 +24,7 @@ public class GlobalExceptionHandler {
             .body(errorMessage);
     }
 
-    @ExceptionHandler({FilmValidationException.class, UserValidationException.class})
+    @ExceptionHandler({FilmValidationException.class, UserValidationException.class, DirectorValidationException.class})
     public ResponseEntity<ErrorMessage> handleValidationException(final ValidationException e) {
         log.warn("Encountered {}: returning 400 Bad Request. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
@@ -43,7 +36,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class,
-        GenreNotFoundException.class, MpaRatingNotFoundException.class})
+        GenreNotFoundException.class, MpaRatingNotFoundException.class, DirectorNotFoundException.class})
     public ResponseEntity<ErrorMessage> handleNotFoundException(final NotFoundException e) {
         log.warn("Encountered {}: returning 404 Not Found. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
