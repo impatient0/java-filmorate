@@ -14,11 +14,6 @@ public class FilmMapperImpl implements FilmMapper {
 
     @Override
     public FilmDto mapToFilmDto(Film film) {
-        log.debug("Mapping film to DTO: id={}, name={}, mpa={}, genres={}",
-                film.getId(), film.getName(),
-                film.getMpa() != null ? film.getMpa().getName() : "null",
-                film.getGenres());
-
         FilmDto filmDto = new FilmDto();
         filmDto.setId(film.getId());
         filmDto.setName(film.getName());

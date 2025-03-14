@@ -3,14 +3,15 @@ package ru.yandex.practicum.filmorate.repository;
 import java.util.Collection;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Review;
 
 @Slf4j
 @Repository
+@Primary
 public class DbReviewStorage extends DbBaseStorage<Review> implements ReviewStorage {
 
     private static final String INSERT_REVIEW =
@@ -37,19 +38,13 @@ public class DbReviewStorage extends DbBaseStorage<Review> implements ReviewStor
     private static final String CHECK_LIKE_DISLIKE =
             "SELECT like_value FROM review_likes WHERE review_id = ? AND user_id = ?";
 
-    private static final RowMapper<Review> reviewRowMapper = (rs, rowNum) -> {
-        Review r = new Review();
-        r.setReviewId(rs.getLong("review_id"));
-        r.setContent(rs.getString("content"));
-        r.setPositive(rs.getBoolean("is_positive"));
-        r.setUserId(rs.getLong("user_id"));
-        r.setFilmId(rs.getLong("film_id"));
-        r.setUseful(rs.getInt("useful"));
-        return r;
-    };
+    // Используем новый ReviewRowMapper, который вынесен в отдельный класс
+    private final RowMapper<Review> reviewRowMapper;
 
-    public DbReviewStorage(JdbcTemplate jdbc) {
+    public DbReviewStorage(JdbcTemplate jdbc, RowMapper<Review> reviewRowMapper) {
+        // Передаем reviewRowMapper в супер, если нужно, или null, если базовый класс не использует его
         super(jdbc, reviewRowMapper);
+        this.reviewRowMapper = reviewRowMapper;
     }
 
     @Override
@@ -95,13 +90,14 @@ public class DbReviewStorage extends DbBaseStorage<Review> implements ReviewStor
 
     @Override
     public void addLike(long reviewId, long userId) {
-        SqlRowSet rowSet = jdbc.queryForRowSet(CHECK_LIKE_DISLIKE, reviewId, userId);
+        // Реализация остается без изменений
+        var rowSet = jdbc.queryForRowSet(CHECK_LIKE_DISLIKE, reviewId, userId);
         if (rowSet.next()) {
             int likeValue = rowSet.getInt("like_value");
             if (likeValue == 1) {
-                return; // Лайк уже установлен
+                return;
             } else if (likeValue == -1) {
-                removeDislike(reviewId, userId); // Удаляем существующий дизлайк
+                removeDislike(reviewId, userId);
             }
         }
         jdbc.update(INSERT_REVIEW_LIKE, reviewId, userId);
@@ -110,13 +106,13 @@ public class DbReviewStorage extends DbBaseStorage<Review> implements ReviewStor
 
     @Override
     public void addDislike(long reviewId, long userId) {
-        SqlRowSet rowSet = jdbc.queryForRowSet(CHECK_LIKE_DISLIKE, reviewId, userId);
+        var rowSet = jdbc.queryForRowSet(CHECK_LIKE_DISLIKE, reviewId, userId);
         if (rowSet.next()) {
             int likeValue = rowSet.getInt("like_value");
             if (likeValue == -1) {
-                return; // Дизлайк уже установлен
+                return;
             } else if (likeValue == 1) {
-                removeLike(reviewId, userId); // Удаляем лайк перед добавлением дизлайка
+                removeLike(reviewId, userId);
             }
         }
         jdbc.update(INSERT_REVIEW_DISLIKE, reviewId, userId);
@@ -137,7 +133,7 @@ public class DbReviewStorage extends DbBaseStorage<Review> implements ReviewStor
 
     @Override
     public boolean hasDislike(long reviewId, long userId) {
-        SqlRowSet rowSet = jdbc.queryForRowSet(CHECK_LIKE_DISLIKE, reviewId, userId);
+        var rowSet = jdbc.queryForRowSet(CHECK_LIKE_DISLIKE, reviewId, userId);
         if (rowSet.next()) {
             return rowSet.getInt("like_value") == -1;
         }
