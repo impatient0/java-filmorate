@@ -20,5 +20,7 @@ public interface FilmStorage {
 
     Collection<Film> getDirectorFilmsBylikes(long directorId, Set<String> params);
 
+    Collection<Film> getCommonFilms(long userId, long friendId);
+
     void deleteFilm(long filmId);
 }

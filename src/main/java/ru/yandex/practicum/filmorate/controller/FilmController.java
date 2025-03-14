@@ -67,6 +67,16 @@ public class FilmController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedFilm);
     }
 
+    @GetMapping("/common")
+    public ResponseEntity<Collection<FilmDto>> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId) {
+        log.info("Request to get common films for users {} and {}", userId, friendId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(filmService.getCommonFilms(userId, friendId));
+    }
+
     @GetMapping(value = "/director/{directorId}", params = {"sortBy"})
     public ResponseEntity<Collection<FilmDto>> getFilmById(@PathVariable long directorId, @RequestParam(value = "sortBy") Set<String> params) {
         log.info("Request to get films with director ID {} received.", directorId);

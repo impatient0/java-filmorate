@@ -4,11 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
 import ru.yandex.practicum.filmorate.exception.*;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -21,7 +24,20 @@ public class GlobalExceptionHandler {
             e.getClass().getSimpleName(), e.getMessage());
         ErrorMessage errorMessage = new ErrorMessage("Internal server error.", null);
         return ResponseEntity.internalServerError().contentType(MediaType.APPLICATION_JSON)
-            .body(errorMessage);
+                .body(errorMessage);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(
+            final MethodArgumentNotValidException e) {
+        log.warn("Validation failed: {}", e.getMessage());
+        String errorDetails = e.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        ErrorMessage errorMessage = new ErrorMessage("Validation failed", errorDetails);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorMessage);
     }
 
     @ExceptionHandler({FilmValidationException.class, UserValidationException.class, DirectorValidationException.class})
@@ -36,7 +52,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class,
-        GenreNotFoundException.class, MpaRatingNotFoundException.class, DirectorNotFoundException.class})
+            GenreNotFoundException.class, MpaRatingNotFoundException.class, ReviewNotFoundException.class, DirectorNotFoundException.class})
     public ResponseEntity<ErrorMessage> handleNotFoundException(final NotFoundException e) {
         log.warn("Encountered {}: returning 404 Not Found. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
@@ -61,5 +77,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON)
             .body(errorMessage);
     }
-
 }

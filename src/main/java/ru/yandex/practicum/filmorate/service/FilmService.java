@@ -11,10 +11,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmValidationException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -22,6 +19,7 @@ import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +32,12 @@ public class FilmService {
     private final Validator validator;
     private final FilmMapper mapper;
     private final DirectorStorage directorStorage;
+    private final UserStorage userStorage;
 
     public Collection<FilmDto> getAllFilms() {
         log.debug("Getting all films");
         return filmStorage.getAllFilms().stream().map(mapper::mapToFilmDto)
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
     }
 
     public FilmDto getFilmById(long filmId) {
@@ -59,9 +58,9 @@ public class FilmService {
             throw new FilmValidationException("Error when creating new film", violationMessage);
         }
         if (newFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
-                newFilmRequest.getMpa().getId())) {
+            newFilmRequest.getMpa().getId())) {
             throw new MpaRatingNotFoundException("Error when creating new film",
-                    newFilmRequest.getMpa().getId());
+                newFilmRequest.getMpa().getId());
         }
         if (newFilmRequest.getGenres() != null) {
             for (Genre genre : newFilmRequest.getGenres()) {
@@ -83,16 +82,16 @@ public class FilmService {
             return new FilmNotFoundException("Error when updating film", updateFilmRequest.getId());
         });
         Set<ConstraintViolation<UpdateFilmRequest>> violations = validator.validate(
-                updateFilmRequest);
+            updateFilmRequest);
         if (!violations.isEmpty()) {
             String violationMessage = violations.iterator().next().getMessage();
             log.warn("Updating film failed: {}", violationMessage);
             throw new FilmValidationException("Error when updating film", violationMessage);
         }
         if (updateFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
-                updateFilmRequest.getMpa().getId())) {
+            updateFilmRequest.getMpa().getId())) {
             throw new MpaRatingNotFoundException("Error when updating film",
-                    updateFilmRequest.getMpa().getId());
+                updateFilmRequest.getMpa().getId());
         }
         if (updateFilmRequest.getGenres() != null) {
             for (Genre genre : updateFilmRequest.getGenres()) {
@@ -129,4 +128,30 @@ public class FilmService {
         filmStorage.deleteFilm(filmId);
     }
 
+    public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
+        if (!userStorage.checkUserExists(userId)) {
+            log.warn("User with ID {} not found", userId);
+            throw new UserNotFoundException("User not found", userId);
+        }
+        if (!userStorage.checkUserExists(friendId)) {
+            log.warn("Friend with ID {} not found", friendId);
+            throw new UserNotFoundException("Friend not found", friendId);
+        }
+
+        log.debug("Fetching common films for users {} and {}", userId, friendId);
+        Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        // 🔥 Логируем данные перед маппингом
+        log.debug("Fetched {} common films", commonFilms.size());
+        for (Film film : commonFilms) {
+            log.debug("Film: id={}, name={}, mpa={}, genres={}",
+                    film.getId(), film.getName(),
+                    film.getMpa() != null ? film.getMpa().getName() : "null",
+                    film.getGenres());
+        }
+
+        return commonFilms.stream()
+                .map(mapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
 }
