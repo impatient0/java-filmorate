@@ -55,15 +55,33 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
                     + "film_likes.film_id "
                     + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
                     + "LEFT JOIN directors d ON fd.director_id = d.director_id "
-                    +  "WHERE d.director_id = ? ORDER BY film_likes.likes_count DESC, f.film_id, g.genre_id";
+                    + "WHERE d.director_id = ? ORDER BY film_likes.likes_count DESC, f.film_id, g.genre_id";
     private static final String GET_BY_DIRECTOR_ID_YEAR_QUERY =
             "SELECT f.film_id, " + "f.name AS film_name, f.description, f.release_date, f.duration, "
-            + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, d.director_id, d.name AS director_name "
-            + "FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
-            + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
-            + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
-            + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
-            + "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE d.director_id = ? ORDER BY f.release_date, f.film_id DESC";
+                    + "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, d.director_id, d.name AS director_name "
+                    + "FROM films f LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
+                    + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
+                    + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
+                    + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
+                    + "LEFT JOIN directors d ON fd.director_id = d.director_id WHERE d.director_id = ? ORDER BY f.release_date, f.film_id DESC";
+
+    private static final String SEARCH_QUERY =
+            "SELECT f.film_id, f.name AS film_name, f.description, f.release_date, f.duration, " +
+                    "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, " +
+                    "d.director_id, d.name AS director_name, " +
+                    "COUNT(l.user_id) AS likes_count " +
+                    "FROM films f " +
+                    "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id " +
+                    "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
+                    "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
+                    "LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
+                    "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                    "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                    "WHERE (%s) " +
+                    "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, " +
+                    "m.mpa_id, m.name, g.genre_id, g.name, d.director_id, d.name " +
+                    "ORDER BY COUNT(l.user_id) DESC";
+
     private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final ResultSetExtractor<List<Film>> extractor;
@@ -138,6 +156,30 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     @Override
     public void deleteFilm(long filmId) {
         delete(DELETE_QUERY, filmId);
+    }
+
+
+    public Collection<Film> searchFilms(String query, String by) {
+        String[] searchTypes = by.split(",");
+        List<String> conditions = new ArrayList<>();
+
+        for (String type : searchTypes) {
+            if ("title".equals(type.trim())) {
+                conditions.add("LOWER(f.name) LIKE LOWER(?)");
+            }
+            if ("director".equals(type.trim())) {
+                conditions.add("LOWER(d.name) LIKE LOWER(?)");
+            }
+        }
+
+        String whereClause = String.join(" OR ", conditions);
+        String finalQuery = String.format(SEARCH_QUERY, whereClause);
+
+        String searchPattern = "%" + query + "%";
+        Object[] params = new Object[conditions.size()];
+        Arrays.fill(params, searchPattern);
+
+        return jdbc.query(finalQuery, extractor, params);
     }
 
 }

@@ -129,4 +129,30 @@ public class FilmService {
         filmStorage.deleteFilm(filmId);
     }
 
+
+    public Collection<FilmDto> searchFilms(String query, String by) {
+        log.debug("Поиск фильмов с запросом '{}' по '{}'", query, by);
+
+        if (query == null || query.trim().isEmpty()) {
+            log.warn("Пустой запрос поиска");
+            throw new FilmValidationException("Запрос поиска не может быть пустым", "Пустой query");
+        }
+
+        Set<String> validTypes = Set.of("title", "director");
+        String[] searchTypes = by.split(",");
+        boolean invalidType = Arrays.stream(searchTypes)
+                .map(String::trim)
+                .anyMatch(type -> !validTypes.contains(type));
+
+        if (invalidType) {
+            log.warn("Недопустимый тип поиска: {}", by);
+            throw new FilmValidationException("Недопустимый тип поиска", "Допустимые типы: title, director");
+        }
+
+        Collection<Film> films = filmStorage.searchFilms(query.toLowerCase(), by);
+        return films.stream()
+                .map(mapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
 }
