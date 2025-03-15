@@ -13,20 +13,20 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
 
     private static final String GET_USER_TAPE_QUERY = """
             SELECT
-                t.created_at as created_at,
-                t.user_id as user_id,
+                f.created_at as created_at,
+                f.user_id as user_id,
                 e.name as event_name,
                 o.name as operation_name,
-                t.tape_id as tape_id,
-                t.entity_id as entity_id
-            FROM user_tape t
-            LEFT JOIN events e ON t.event_id = e.event_id
-            LEFT JOIN operations o ON t.operation_id = o.operation_id
+                f.feed_id as feed_id,
+                f.entity_id as entity_id
+            FROM user_feed f
+            LEFT JOIN events e ON f.event_id = e.event_id
+            LEFT JOIN operations o ON f.operation_id = o.operation_id
             WHERE user_id = ?
             ORDER BY created_at
             """;
 
-    private static final String INSERT_USER_TAPE_QUERY = "INSERT INTO user_tape "
+    private static final String INSERT_USER_TAPE_QUERY = "INSERT INTO user_feed "
             + "(user_id, event_id, operation_id, entity_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
 
@@ -35,7 +35,7 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
     }
 
     @Override
-    public void insertUserTapeQuery(long userId, int eventId, int operationId, long entityId) {
+    public void insertUserFeedQuery(long userId, int eventId, int operationId, long entityId) {
         jdbc.update(INSERT_USER_TAPE_QUERY, userId, eventId, operationId, entityId);
     }
 

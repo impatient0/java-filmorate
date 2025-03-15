@@ -49,14 +49,14 @@ public class FriendsService {
             if (statusReversed.isEmpty()) {
                 friendshipStorage.insertDirectionalFriendship(userId, friendId,
                     FriendshipStatus.PENDING);
-                eventStorage.insertUserTapeQuery(userId, 3, 2, friendId);
+                eventStorage.insertUserFeedQuery(userId, 3, 2, friendId);
                 log.debug("Sent friend request from user {} to user {}", userId, friendId);
             } else {
                 friendshipStorage.insertDirectionalFriendship(userId, friendId,
                     FriendshipStatus.CONFIRMED);
                 friendshipStorage.updateFriendshipStatus(friendId, userId,
                     FriendshipStatus.CONFIRMED);
-                eventStorage.insertUserTapeQuery(userId, 3, 3, friendId);
+                eventStorage.insertUserFeedQuery(userId, 3, 3, friendId);
                 log.debug("Confirmed friend request from user {} to user {}", friendId, userId);
             }
         } else {
@@ -85,7 +85,7 @@ public class FriendsService {
         }
         log.debug("Removing friendship between users {} and {}", userId, friendId);
         friendshipStorage.deleteDirectionalFriendship(userId, friendId);
-        eventStorage.insertUserTapeQuery(userId, 3, 1, friendId);
+        eventStorage.insertUserFeedQuery(userId, 3, 1, friendId);
         friendshipStorage.updateFriendshipStatus(friendId, userId, FriendshipStatus.PENDING);
         //eventStorage.insertUserTapeQuery(userId, 3, 2, friendId);
     }

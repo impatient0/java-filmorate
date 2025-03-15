@@ -37,7 +37,7 @@ public class LikesService {
         }
         log.debug("User with ID {} likes film with ID {}", userId, filmId);
         likesStorage.addLike(userId, filmId);
-        eventStorage.insertUserTapeQuery(userId, 1, 2, filmId);
+        eventStorage.insertUserFeedQuery(userId, 1, 2, filmId);
     }
 
     public void unlikeFilm(long userId, long filmId) {
@@ -51,7 +51,7 @@ public class LikesService {
         }
         log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
         likesStorage.removeLike(userId, filmId);
-        eventStorage.insertUserTapeQuery(userId, 1, 1, filmId);
+        eventStorage.insertUserFeedQuery(userId, 1, 1, filmId);
     }
 
     public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {

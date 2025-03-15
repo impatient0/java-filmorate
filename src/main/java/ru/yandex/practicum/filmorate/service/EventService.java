@@ -5,7 +5,7 @@ import java.util.LinkedHashSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.EventNotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.repository.EventStorage;
 
@@ -19,8 +19,8 @@ public class EventService {
     public LinkedHashSet<Event> getEventById(long userId) {
         LinkedHashSet<Event> event = eventStorage.getUserEvents(userId);
         if (event.isEmpty()) {
-            log.warn("Getting user failed: user with ID {} not found", userId);
-            throw new UserNotFoundException("Error when getting user", userId);
+            log.warn("Event feed for the user with ID {} is empty", userId);
+            throw new EventNotFoundException("Error when getting event feed", userId);
         }
         log.debug("Getting all events of the user with ID {}", userId);
         return event;

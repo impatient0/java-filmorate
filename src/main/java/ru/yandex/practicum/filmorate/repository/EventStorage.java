@@ -6,7 +6,7 @@ import java.util.LinkedHashSet;
 
 public interface EventStorage {
 
-    void insertUserTapeQuery(long userId, int eventId, int operationId, long entityId);
+    void insertUserFeedQuery(long userId, int eventId, int operationId, long entityId);
 
     LinkedHashSet<Event> getUserEvents(long userId);
 
