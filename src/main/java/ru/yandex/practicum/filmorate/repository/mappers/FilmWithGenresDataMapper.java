@@ -21,6 +21,7 @@ public class FilmWithGenresDataMapper implements ResultSetExtractor<List<Film>> 
     @Override
     public List<Film> extractData(ResultSet rs) throws SQLException {
         Map<Long, Film> filmMap = new LinkedHashMap<>();
+
         while (rs.next()) {
             long filmId = rs.getLong("film_id");
             Film film = filmMap.get(filmId);
@@ -29,26 +30,53 @@ public class FilmWithGenresDataMapper implements ResultSetExtractor<List<Film>> 
                 film.setId(filmId);
                 film.setName(rs.getString("film_name"));
                 film.setDescription(rs.getString("description"));
-                film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+
+                java.sql.Date sqlDate = rs.getDate("release_date");
+                film.setReleaseDate(sqlDate != null ? sqlDate.toLocalDate() : null);
+
                 film.setDuration(rs.getInt("duration"));
+
                 MpaRating mpaRating = new MpaRating();
                 mpaRating.setId(rs.getInt("mpa_id"));
                 mpaRating.setName(rs.getString("mpa_name"));
-                if (mpaRating.getId() == 0) {
-                    film.setMpa(null);
-                } else {
-                    film.setMpa(mpaRating);
-                }
+                film.setMpa(mpaRating.getId() == 0 ? null : mpaRating);
+
                 film.setGenres(new HashSet<>());
                 film.setDirector(new HashSet<>());
                 filmMap.put(filmId, film);
             }
-            int genreId = rs.getInt("genre_id");
-            if (genreId != 0) {
-                Genre genre = new Genre();
-                genre.setId(genreId);
-                genre.setName(rs.getString("genre_name"));
-                film.getGenres().add(genre);
+
+            String aggregatedGenreIds = null;
+            String aggregatedGenreNames = null;
+            try {
+                aggregatedGenreIds = rs.getString("genre_ids");
+                aggregatedGenreNames = rs.getString("genre_names");
+            } catch (SQLException e) {
+                // Если столбцы отсутствуют, агрегированные данные не возвращаются – перейдем к старой логике
+            }
+
+            if (aggregatedGenreIds != null && aggregatedGenreNames != null) {
+                String[] ids = aggregatedGenreIds.split(",");
+                String[] names = aggregatedGenreNames.split(",");
+                if (ids.length == names.length) {
+                    for (int i = 0; i < ids.length; i++) {
+                        try {
+                            int genreId = Integer.parseInt(ids[i].trim());
+                            String genreName = names[i].trim();
+                            film.getGenres().add(new Genre(genreId, genreName));
+                        } catch (NumberFormatException e) {
+                            // Пропускаем некорректные значения
+                        }
+                    }
+                }
+            } else {
+                int genreId = rs.getInt("genre_id");
+                if (genreId != 0) {
+                    String genreName = rs.getString("genre_name");
+                    if (genreName != null) {
+                        film.getGenres().add(new Genre(genreId, genreName));
+                    }
+                }
             }
             long directorId = rs.getLong("director_id");
             if (directorId != 0) {
@@ -58,6 +86,7 @@ public class FilmWithGenresDataMapper implements ResultSetExtractor<List<Film>> 
                 film.getDirector().add(director);
             }
         }
+
         return new ArrayList<>(filmMap.values());
     }
 }
