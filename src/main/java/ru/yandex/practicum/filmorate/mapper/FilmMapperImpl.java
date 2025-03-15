@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Component
+@SuppressWarnings("unused")
 public class FilmMapperImpl implements FilmMapper {
 
     @Override
