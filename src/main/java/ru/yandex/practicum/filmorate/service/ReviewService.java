@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.repository.EventStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.ReviewStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
@@ -30,6 +31,7 @@ public class ReviewService {
     private final FilmStorage filmStorage;
     private final ReviewMapper reviewMapper;
     private final Validator validator;
+    private final EventStorage eventStorage;
 
     public ReviewDto addReview(NewReviewRequest request) {
         if (request.getContent() == null) {
@@ -56,6 +58,7 @@ public class ReviewService {
             Review review = reviewMapper.mapToReviewModel(request);
             Review added = reviewStorage.addReview(review);
             log.debug("Added review: {}", added);
+            eventStorage.insertUserTapeQuery(added.getUserId(), 2, 2, added.getReviewId());
             return reviewMapper.mapToReviewDto(added);
         } catch (DataIntegrityViolationException e) {
             throw new InternalServerException("Review create Fail: database integrity violation", e);
@@ -69,12 +72,14 @@ public class ReviewService {
         review = reviewMapper.updateReviewFields(review, request);
         Review updated = reviewStorage.updateReview(review);
         log.debug("Updated review: {}", updated);
+        eventStorage.insertUserTapeQuery(updated.getUserId(), 2, 3, updated.getReviewId());
         return reviewMapper.mapToReviewDto(updated);
     }
 
     public void deleteReview(long reviewId) {
         reviewStorage.deleteReview(reviewId);
         log.debug("Deleted review with ID: {}", reviewId);
+        eventStorage.insertUserTapeQuery(reviewStorage.getReviewById(reviewId).get().getUserId(), 2, 1, reviewId);
     }
 
     public ReviewDto getReviewById(long reviewId) {
