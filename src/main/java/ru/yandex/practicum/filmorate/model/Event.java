@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Event {
 
-    private Integer timestamp;
+    private Long timestamp;
     private Long userId;
     private String eventType;
     private String operation;
