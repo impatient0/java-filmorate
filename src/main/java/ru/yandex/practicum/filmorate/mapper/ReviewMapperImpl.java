@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dto.UpdateReviewRequest;
 import ru.yandex.practicum.filmorate.model.Review;
 
 @Component
+@SuppressWarnings("unused")
 public class ReviewMapperImpl implements ReviewMapper {
 
     @Override

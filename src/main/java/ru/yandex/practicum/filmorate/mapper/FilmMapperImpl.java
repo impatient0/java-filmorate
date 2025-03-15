@@ -6,19 +6,13 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Component
+@SuppressWarnings("unused")
 public class FilmMapperImpl implements FilmMapper {
 
     @Override
     public FilmDto mapToFilmDto(Film film) {
-        log.debug("Mapping film to DTO: id={}, name={}, mpa={}, genres={}",
-                film.getId(), film.getName(),
-                film.getMpa() != null ? film.getMpa().getName() : "null",
-                film.getGenres());
-
         FilmDto filmDto = new FilmDto();
         filmDto.setId(film.getId());
         filmDto.setName(film.getName());

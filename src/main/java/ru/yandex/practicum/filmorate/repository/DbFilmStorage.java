@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.*;
-
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -92,28 +94,29 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         """;
 
     private static final String GET_COMMON_FILMS_QUERY = """
-        SELECT
-            f.film_id,
-            f.name AS film_name,
-            f.description,
-            f.release_date,
-            f.duration,
-            COALESCE(m.mpa_id, 0) AS mpa_id,
-            COALESCE(m.name, 'Unknown') AS mpa_name,
-            g.genre_id,
-            g.name AS genre_name,
-            COUNT(DISTINCT l.user_id) AS like_count
-        FROM films f
-        JOIN likes l ON f.film_id = l.film_id
-        LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id
-        LEFT JOIN film_genres fg ON f.film_id = fg.film_id
-        LEFT JOIN genres g ON fg.genre_id = g.genre_id
+        SELECT f.film_id,
+               f.name AS film_name,
+               f.description,
+               f.release_date,
+               f.duration,
+               m.mpa_id,
+               m.name AS mpa_name,
+               g.genre_id,
+               g.name AS genre_name,
+               d.director_id,
+               d.name AS director_name,
+               COUNT(l.user_id) AS like_count
+        FROM films AS f
+        LEFT JOIN mpa_ratings AS m ON f.mpa_rating_id = m.mpa_id
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+        LEFT JOIN directors AS d ON fd.director_id = d.director_id
+        INNER JOIN likes AS l ON f.film_id = l.film_id
         WHERE l.user_id IN (?, ?)
-        GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration,
-                 COALESCE(m.mpa_id, 0), COALESCE(m.name, 'Unknown'),
-                 g.genre_id, g.name
-        HAVING COUNT(DISTINCT l.user_id) >= 2
-        ORDER BY like_count DESC, f.film_id
+        GROUP BY f.film_id
+        HAVING COUNT(DISTINCT l.user_id) = 2
+        ORDER BY like_count DESC
         """;
 
     private static final String ADD_DIRECTORS_QUERY = """
