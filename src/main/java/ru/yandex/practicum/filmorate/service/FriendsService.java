@@ -87,7 +87,7 @@ public class FriendsService {
         friendshipStorage.deleteDirectionalFriendship(userId, friendId);
         eventStorage.insertUserTapeQuery(userId, 3, 1, friendId);
         friendshipStorage.updateFriendshipStatus(friendId, userId, FriendshipStatus.PENDING);
-        eventStorage.insertUserTapeQuery(userId, 3, 2, friendId);
+        //eventStorage.insertUserTapeQuery(userId, 3, 2, friendId);
     }
 
     public Set<UserDto> getUserFriends(long userId) {
