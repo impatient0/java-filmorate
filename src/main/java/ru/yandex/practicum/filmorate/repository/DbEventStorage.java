@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -26,7 +26,7 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
             ORDER BY created_at
             """;
 
-    private static final String INSERT_USER_TAPE_QUERY = "INSERT INTO user_feed "
+    private static final String INSERT_USER_FEED_QUERY = "INSERT INTO user_feed "
             + "(user_id, event_id, operation_id, entity_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
 
@@ -36,11 +36,11 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
 
     @Override
     public void insertUserFeedQuery(long userId, int eventId, int operationId, long entityId) {
-        jdbc.update(INSERT_USER_TAPE_QUERY, userId, eventId, operationId, entityId);
+        jdbc.update(INSERT_USER_FEED_QUERY, userId, eventId, operationId, entityId);
     }
 
     @Override
-    public LinkedHashSet<Event> getUserEvents(long userId) {
-        return new LinkedHashSet<>(getMultiple(GET_USER_TAPE_QUERY, userId));
+    public ArrayList<Event> getUserEvents(long userId) {
+        return new ArrayList<>(getMultiple(GET_USER_TAPE_QUERY, userId));
     }
 }

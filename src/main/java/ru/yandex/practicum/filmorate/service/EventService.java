@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +16,8 @@ public class EventService {
 
     private final EventStorage eventStorage;
 
-    public LinkedHashSet<Event> getEventById(long userId) {
-        LinkedHashSet<Event> event = eventStorage.getUserEvents(userId);
+    public ArrayList<Event> getEventById(long userId) {
+        ArrayList<Event> event = eventStorage.getUserEvents(userId);
         if (event.isEmpty()) {
             log.warn("Event feed for the user with ID {} is empty", userId);
             throw new EventNotFoundException("Error when getting event feed", userId);
