@@ -5,6 +5,7 @@ import jakarta.validation.Validator;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -113,7 +114,7 @@ public class FilmService {
         log.debug("Getting films with directorID {}", directorId);
         List<FilmDto> list = new ArrayList<>();
         for (Film f : film) {
-            list.add(mapper.mapToFilmDto(f)); // Исправлено здесь
+            list.add(mapper.mapToFilmDto(f));
         }
         return list;
     }
@@ -132,7 +133,7 @@ public class FilmService {
 
         if (query == null || query.trim().isEmpty()) {
             log.warn("Пустой запрос поиска");
-            throw new FilmValidationException("Запрос поиска не может быть пустым", "Пустой query");
+            throw new SearchParameterValidationException("Запрос поиска не может быть пустым", "Пустой query");
         }
 
         Set<String> validTypes = Set.of("title", "director");
@@ -143,7 +144,7 @@ public class FilmService {
 
         if (invalidType) {
             log.warn("Недопустимый тип поиска: {}", by);
-            throw new FilmValidationException("Недопустимый тип поиска", "Допустимые типы: title, director");
+            throw new SearchParameterValidationException("Недопустимый тип поиска", "Допустимые типы: title, director");
         }
 
         Collection<Film> films = filmStorage.searchFilms(query.toLowerCase(), by);
