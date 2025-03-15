@@ -13,7 +13,7 @@ public class EventRowMapper implements RowMapper<Event> {
     @Override
     public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
         Event event = new Event();
-        event.setTimestamp(rs.getDate("created_at").toLocalDate());
+        event.setTimestamp(rs.getTimestamp("created_at"));
         event.setUserId(rs.getLong("user_id"));
         event.setEventType(rs.getString("event_name"));
         event.setOperation(rs.getString("operation_name"));

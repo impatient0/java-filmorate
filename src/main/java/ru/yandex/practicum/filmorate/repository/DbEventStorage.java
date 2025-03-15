@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -24,6 +23,7 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
             LEFT JOIN events e ON t.event_id = e.event_id
             LEFT JOIN operations o ON t.operation_id = o.operation_id
             WHERE user_id = ?
+            ORDER BY created_at
             """;
 
     private static final String INSERT_USER_TAPE_QUERY = "INSERT INTO user_tape "
@@ -40,7 +40,7 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
     }
 
     @Override
-    public Set<Event> getUserEvents(long userId) {
-        return new HashSet<>(getMultiple(GET_USER_TAPE_QUERY, userId));
+    public LinkedHashSet<Event> getUserEvents(long userId) {
+        return new LinkedHashSet<>(getMultiple(GET_USER_TAPE_QUERY, userId));
     }
 }

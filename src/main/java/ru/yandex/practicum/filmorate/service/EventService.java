@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +16,8 @@ public class EventService {
 
     private final EventStorage eventStorage;
 
-    public Set<Event> getEventById(long userId) {
-        Set<Event> event = eventStorage.getUserEvents(userId);
+    public LinkedHashSet<Event> getEventById(long userId) {
+        LinkedHashSet<Event> event = eventStorage.getUserEvents(userId);
         if (event.isEmpty()) {
             log.warn("Getting user failed: user with ID {} not found", userId);
             throw new UserNotFoundException("Error when getting user", userId);
