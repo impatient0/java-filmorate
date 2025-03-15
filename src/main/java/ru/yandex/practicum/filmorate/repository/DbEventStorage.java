@@ -5,9 +5,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.repository.mappers.EventRowMapper;
 
 @Repository
 @SuppressWarnings("unused")
@@ -31,7 +31,7 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
             + "(user_id, event_id, operation_id, entity_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
 
-    public DbEventStorage(JdbcTemplate jdbc, RowMapper<Event> mapper) {
+    public DbEventStorage(JdbcTemplate jdbc, EventRowMapper mapper) {
         super(jdbc, mapper);
     }
 
