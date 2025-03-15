@@ -27,6 +27,7 @@ public class FilmMapperImpl implements FilmMapper {
         filmDto.setDuration(film.getDuration());
         filmDto.setMpa(film.getMpa());
         filmDto.setGenres(film.getGenres());
+        filmDto.setDirectors(film.getDirector());
         return filmDto;
     }
 
@@ -39,7 +40,9 @@ public class FilmMapperImpl implements FilmMapper {
         film.setDuration(newFilmRequest.getDuration());
         film.setMpa(newFilmRequest.getMpa());
         film.setGenres(
-            newFilmRequest.getGenres() == null ? new HashSet<>() : newFilmRequest.getGenres());
+                newFilmRequest.getGenres() == null ? new HashSet<>() : newFilmRequest.getGenres());
+        film.setDirector(
+                newFilmRequest.getDirectors() == null ? new HashSet<>() : newFilmRequest.getDirectors());
         return film;
     }
 
@@ -62,6 +65,9 @@ public class FilmMapperImpl implements FilmMapper {
         }
         if (updateFilmRequest.getGenres() != null) {
             film.setGenres(updateFilmRequest.getGenres());
+        }
+        if (updateFilmRequest.getDirectors() != null) {
+            film.setDirector(updateFilmRequest.getDirectors());
         }
         return film;
     }

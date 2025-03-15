@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
@@ -41,6 +42,7 @@ public class FilmWithGenresDataMapper implements ResultSetExtractor<List<Film>> 
                 film.setMpa(mpaRating.getId() == 0 ? null : mpaRating);
 
                 film.setGenres(new HashSet<>());
+                film.setDirector(new HashSet<>());
                 filmMap.put(filmId, film);
             }
 
@@ -75,6 +77,13 @@ public class FilmWithGenresDataMapper implements ResultSetExtractor<List<Film>> 
                         film.getGenres().add(new Genre(genreId, genreName));
                     }
                 }
+            }
+            long directorId = rs.getLong("director_id");
+            if (directorId != 0) {
+                Director director = new Director();
+                director.setId(directorId);
+                director.setName(rs.getString("director_name"));
+                film.getDirector().add(director);
             }
         }
 

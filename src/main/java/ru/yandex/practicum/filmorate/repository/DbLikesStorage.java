@@ -23,28 +23,30 @@ public class DbLikesStorage implements LikesStorage {
     private static final String ADD_LIKE_QUERY =
             "INSERT INTO likes (user_id, film_id, liked_at) VALUES (?, ?, CURRENT_TIMESTAMP)";
     private static final String REMOVE_LIKE_QUERY =
-            "DELETE FROM likes WHERE user_id = ? AND film_id = ?";
-    private static final String GET_LIKED_FILMS_QUERY =
-            "WITH film_likes AS (SELECT film_id FROM likes WHERE user_id = ?) " +
-                    "SELECT f.film_id, f.name AS film_name, f.description, f.release_date, f.duration, " +
-                    "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name " +
-                    "FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id " +
-                    "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
-                    "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
-                    "JOIN film_likes ON f.film_id = film_likes.film_id " +
-                    "ORDER BY f.film_id, g.genre_id";
-    private static final String GET_USERS_WHO_LIKED_FILM_QUERY =
-            "SELECT u.* FROM users AS u RIGHT JOIN likes AS l ON u.user_id = l.user_id WHERE l.film_id = ?";
+        "DELETE FROM likes WHERE user_id = ? AND " + "film_id = ?";
+    private static final String GET_LIKED_FILMS_QUERY = "WITH film_likes AS (SELECT film_id FROM "
+        + "likes WHERE user_id = ?) SELECT f.film_id, f.name AS film_name, f.description, f"
+        + ".release_date, f.duration, m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS "
+        + "genre_name, d.director_id, d.name AS director_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id LEFT JOIN "
+        + "film_genres fg ON f.film_id = fg.film_id LEFT JOIN genres g ON fg.genre_id = g"
+        + ".genre_id JOIN film_likes ON f.film_id = film_likes.film_id "
+        + "LEFT JOIN film_directors fd ON f.film_id = fd.film_id "
+        + "LEFT JOIN directors d ON fd.director_id = d.director_id "
+        + "ORDER BY f.film_id, g.genre_id";
+    private static final String GET_USERS_WHO_LIKED_FILM_QUERY = "SELECT u.* FROM users AS u RIGHT " +
+            "JOIN likes AS l ON u.user_id = l.user_id WHERE l.film_id = ?";
     private static final String GET_POPULAR_FILMS_QUERY =
             "WITH film_likes AS (SELECT film_id, COUNT(film_id) AS likes_count FROM likes GROUP BY film_id) " +
                     "SELECT f.film_id, f.name AS film_name, f.description, f.release_date, f.duration, " +
-                    "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, " +
+                    "m.mpa_id, m.name AS mpa_name, g.genre_id, g.name AS genre_name, d.director_id, d.name AS director_name, " +
                     "COALESCE(film_likes.likes_count, 0) AS likes_count " +
                     "FROM films f " +
                     "JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id " +
                     "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
                     "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
                     "LEFT JOIN film_likes ON f.film_id = film_likes.film_id " +
+                    "LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
+                    "LEFT JOIN directors d ON fd.director_id = d.director_id " +
                     "WHERE (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?) " +
                     "AND (? IS NULL OR fg.genre_id = ?) " +
                     "ORDER BY COALESCE(film_likes.likes_count, 0) DESC, f.film_id, g.genre_id " +
