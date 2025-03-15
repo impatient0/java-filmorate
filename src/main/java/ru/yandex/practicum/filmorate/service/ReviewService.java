@@ -77,9 +77,9 @@ public class ReviewService {
     }
 
     public void deleteReview(long reviewId) {
+        eventStorage.insertUserTapeQuery(reviewStorage.getReviewById(reviewId).get().getUserId(), 2, 1, reviewId);
         reviewStorage.deleteReview(reviewId);
         log.debug("Deleted review with ID: {}", reviewId);
-        eventStorage.insertUserTapeQuery(reviewStorage.getReviewById(reviewId).get().getUserId(), 2, 1, reviewId);
     }
 
     public ReviewDto getReviewById(long reviewId) {
