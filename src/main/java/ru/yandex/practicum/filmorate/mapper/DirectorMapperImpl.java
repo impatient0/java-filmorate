@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dto.UpdateDirectorRequest;
 import ru.yandex.practicum.filmorate.model.Director;
 
 @Component
+@SuppressWarnings("unused")
 public class DirectorMapperImpl implements DirectorMapper {
 
     @Override
