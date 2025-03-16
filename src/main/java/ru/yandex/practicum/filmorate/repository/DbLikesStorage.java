@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.repository;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -108,42 +109,51 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
         """;
 
     private static final String GET_POPULAR_FILMS_QUERY = """
-        WITH avg_film_ratings AS (
-          SELECT
-            film_id,
-            AVG(rating_value) AS avg_rating
-          FROM ratings
-          GROUP BY
-            film_id
+        WITH FilmAvgRatings AS (
+            SELECT
+                film_id,
+                AVG(rating_value) AS avg_rating
+            FROM ratings
+            GROUP BY
+                film_id
+        ),
+        TopFilmIds AS (
+            SELECT
+                f.film_id
+            FROM films f
+            LEFT JOIN FilmAvgRatings fa
+            ON f.film_id = fa.film_id
+            ORDER BY COALESCE(fa.avg_rating, 0) DESC, f.film_id
+            LIMIT ?
         )
         SELECT
-          f.film_id,
-          f.name AS film_name,
-          f.description,
-          f.release_date,
-          f.duration,
-          m.mpa_id,
-          m.name AS mpa_name,
-          g.genre_id,
-          g.name AS genre_name,
-          d.director_id,
-          d.name AS director_name,
-          COALESCE(avg_film_ratings.avg_rating, 0.0) AS avg_rating
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name AS mpa_name,
+            g.genre_id,
+            g.name AS genre_name,
+            d.director_id,
+            d.name AS director_name,
+            COALESCE(FilmAvgRatings.avg_rating, 0.0) AS avg_rating
         FROM films f
         JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id
         LEFT JOIN film_genres fg ON f.film_id = fg.film_id
         LEFT JOIN genres g ON fg.genre_id = g.genre_id
         LEFT JOIN film_directors fd ON f.film_id = fd.film_id
         LEFT JOIN directors d ON fd.director_id = d.director_id
-        LEFT JOIN avg_film_ratings ON f.film_id = avg_film_ratings.film_id
+        INNER JOIN TopFilmIds ON f.film_id = TopFilmIds.film_id -- Join with the CTE to filter by top film IDs
+        LEFT JOIN FilmAvgRatings ON f.film_id = FilmAvgRatings.film_id -- Re-join to get the average rating
         WHERE
-          (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
-          AND (? IS NULL OR fg.genre_id = ?)
+            (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
+            AND (? IS NULL OR fg.genre_id = ?)
         ORDER BY
-          avg_rating DESC,
-          f.film_id,
-          g.genre_id
-        LIMIT ?
+            avg_rating DESC,
+            f.film_id,
+            g.genre_id
         """;
 
     private static final String GET_ALL_RATINGS_QUERY = """
@@ -165,8 +175,12 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     @Override
     public void addRating(long userId, long filmId, double ratingValue) {
         log.trace("Adding rating from userId={} to filmId={}", userId, filmId);
-        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId, ratingValue);
-        log.trace("Rating added, rows affected: {}", rowsAffected);
+        try {
+            int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId, ratingValue);
+            log.trace("Rating added, rows affected: {}", rowsAffected);
+        } catch (DuplicateKeyException e) {
+            log.warn("Adding duplicate like aborted");
+        }
     }
 
     @Override
@@ -226,7 +240,8 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     public List<FilmWithRating> getPopularFilms(long count, Integer genreId, Integer year) {
         log.trace("Fetching popular films with count={}, genreId={}, year={}", count, genreId,
             year);
-        List<FilmWithRating> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year, genreId, genreId, count);
+        List<FilmWithRating> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, count, year,
+            year, genreId, genreId);
         log.trace("Found {} popular films", films == null ? 0 : films.size());
         return films;
     }
