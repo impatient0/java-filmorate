@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
@@ -137,7 +137,7 @@ public class DbFriendshipStorageTest {
         jdbc.update(INSERT_DIRECTIONAL_FRIENDSHIP_QUERY, user1.getId(), user3.getId(),
             FriendshipStatus.CONFIRMED.toString());
 
-        Set<User> friends = friendshipStorage.getUserFriends(user1.getId());
+        List<User> friends = friendshipStorage.getUserFriends(user1.getId());
 
         assertThat(friends.size()).isEqualTo(2);
         assertThat(friends).contains(user2, user3);
@@ -161,7 +161,7 @@ public class DbFriendshipStorageTest {
         jdbc.update(INSERT_DIRECTIONAL_FRIENDSHIP_QUERY, user1.getId(), user4.getId(),
             FriendshipStatus.CONFIRMED.toString());
 
-        Set<User> commonFriends = friendshipStorage.getCommonFriends(user1.getId(), user2.getId());
+        List<User> commonFriends = friendshipStorage.getCommonFriends(user1.getId(), user2.getId());
 
         assertThat(commonFriends.size()).isEqualTo(1);
         assertThat(commonFriends).contains(user3);
