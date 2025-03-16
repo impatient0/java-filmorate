@@ -2,17 +2,24 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
-import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmValidationException;
+import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
+import ru.yandex.practicum.filmorate.exception.SearchParameterValidationException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
@@ -107,17 +114,13 @@ public class FilmService {
     }
 
     public List<FilmDto> getFilmsByLikes(long directorId, Set<String> params) {
-        Collection<Film> film = filmStorage.getDirectorFilmsBylikes(directorId, params);
+        List<FilmWithRating> film = filmStorage.getDirectorFilmsBylikes(directorId, params);
         if (film.isEmpty()) {
             log.warn("Getting films failed: TOP films with director ID {} not found", directorId);
             throw new FilmNotFoundException("Error when getting films", directorId);
         }
         log.debug("Getting films with directorID {}", directorId);
-        List<FilmDto> list = new ArrayList<>();
-        for (Film f : film) {
-            list.add(mapper.mapToFilmDto(f));
-        }
-        return list;
+        return film.stream().map(mapper::mapToFilmDto).collect(Collectors.toList());
     }
 
     public void deleteFilm(long filmId) {
@@ -148,7 +151,7 @@ public class FilmService {
             throw new SearchParameterValidationException("Недопустимый тип поиска", "Допустимые типы: title, director");
         }
 
-        Collection<Film> films = filmStorage.searchFilms(query.toLowerCase(), by);
+        List<FilmWithRating> films = filmStorage.searchFilms(query.toLowerCase(), by);
         return films.stream()
                 .map(mapper::mapToFilmDto)
                 .collect(Collectors.toList());
@@ -165,14 +168,15 @@ public class FilmService {
         }
 
         log.debug("Fetching common films for users {} and {}", userId, friendId);
-        Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+        List<FilmWithRating> commonFilms = filmStorage.getCommonFilms(userId, friendId);
 
         log.debug("Fetched {} common films", commonFilms.size());
-        for (Film film : commonFilms) {
-            log.debug("Film: id={}, name={}, mpa={}, genres={}",
+        for (FilmWithRating filmWithRating : commonFilms) {
+            Film film = filmWithRating.getFilm();
+            log.debug("Film: id={}, name={}, mpa={}, genres={}, rating={}",
                     film.getId(), film.getName(),
-                    film.getMpa() != null ? film.getMpa().getName() : "null",
-                    film.getGenres());
+                    film.getMpa() != null ? film.getMpa().getName() : "null", film.getGenres(),
+                filmWithRating.getAvgRating());
         }
 
         return commonFilms.stream()
