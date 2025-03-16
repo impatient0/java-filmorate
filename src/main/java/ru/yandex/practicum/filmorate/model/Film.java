@@ -16,5 +16,5 @@ public class Film {
     private String description;
     private MpaRating mpa;
     private Set<Genre> genres;
-    private Set<Director> director;
+    private Set<Director> directors;
 }

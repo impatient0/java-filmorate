@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
@@ -69,7 +69,7 @@ public class RecommendationControllerTest {
         mpaRating.setId(mpaId);
         mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
-        film.setGenres(Set.of());
+        film.setGenres(List.of());
         return film;
     }
 

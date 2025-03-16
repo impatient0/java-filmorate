@@ -1,12 +1,17 @@
 package ru.yandex.practicum.filmorate.mapper;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
+import ru.yandex.practicum.filmorate.model.Genre;
 
 @Component
 @SuppressWarnings("unused")
@@ -26,8 +31,12 @@ public class FilmMapperImpl implements FilmMapper {
         filmDto.setReleaseDate(film.getReleaseDate());
         filmDto.setDuration(film.getDuration());
         filmDto.setMpa(film.getMpa());
-        filmDto.setGenres(film.getGenres());
-        filmDto.setDirectors(film.getDirector());
+        filmDto.setGenres(film.getGenres() == null ? new ArrayList<>()
+            : film.getGenres().stream().sorted(Comparator.comparingLong(Genre::getId))
+                .collect(Collectors.toList()));
+        filmDto.setDirectors(film.getDirectors() == null ? new ArrayList<>()
+            : film.getDirectors().stream().sorted(Comparator.comparingLong(Director::getId))
+                .collect(Collectors.toList()));
         filmDto.setRate(averageRating);
         return filmDto;
     }
@@ -46,9 +55,9 @@ public class FilmMapperImpl implements FilmMapper {
         film.setDuration(newFilmRequest.getDuration());
         film.setMpa(newFilmRequest.getMpa());
         film.setGenres(
-                newFilmRequest.getGenres() == null ? new HashSet<>() : newFilmRequest.getGenres());
-        film.setDirector(
-                newFilmRequest.getDirectors() == null ? new HashSet<>() : newFilmRequest.getDirectors());
+            newFilmRequest.getGenres() == null ? new HashSet<>() : newFilmRequest.getGenres());
+        film.setDirectors(newFilmRequest.getDirectors() == null ? new HashSet<>()
+            : newFilmRequest.getDirectors());
         return film;
     }
 
@@ -73,7 +82,7 @@ public class FilmMapperImpl implements FilmMapper {
             film.setGenres(updateFilmRequest.getGenres());
         }
         if (updateFilmRequest.getDirectors() != null) {
-            film.setDirector(updateFilmRequest.getDirectors());
+            film.setDirectors(updateFilmRequest.getDirectors());
         }
         return film;
     }

@@ -345,8 +345,8 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
                 jdbc.update(ADD_GENRE_QUERY, assignedId, genre.getId());
             }
         }
-        if (film.getDirector() != null) {
-            for (Director director : film.getDirector()) {
+        if (film.getDirectors() != null) {
+            for (Director director : film.getDirectors()) {
                 jdbc.update(ADD_DIRECTORS_QUERY, assignedId, director.getId());
             }
         }
@@ -368,8 +368,8 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
                 jdbc.update(ADD_GENRE_QUERY, film.getId(), genre.getId());
             }
         }
-        if (film.getDirector() != null) {
-            for (Director director : film.getDirector()) {
+        if (film.getDirectors() != null) {
+            for (Director director : film.getDirectors()) {
                 jdbc.update(ADD_DIRECTORS_QUERY, film.getId(), director.getId());
             }
         }

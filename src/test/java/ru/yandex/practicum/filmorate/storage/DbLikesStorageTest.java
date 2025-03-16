@@ -83,7 +83,7 @@ public class DbLikesStorageTest {
         mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
         film.setGenres(genres);
-        film.setDirector(directors);
+        film.setDirectors(directors);
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
         return film;

@@ -43,7 +43,7 @@ public class FilmWithAvgRatingDataMapper implements ResultSetExtractor<List<Film
                 film.setMpa(mpaRating.getId() == 0 ? null : mpaRating);
 
                 film.setGenres(new HashSet<>());
-                film.setDirector(new HashSet<>()); // Initialize director set
+                film.setDirectors(new HashSet<>()); // Initialize director set
                 filmMap.put(filmId, film);
 
                 double avgRating = rs.getDouble("avg_rating");
@@ -64,7 +64,7 @@ public class FilmWithAvgRatingDataMapper implements ResultSetExtractor<List<Film
                 Director director = new Director();
                 director.setId(directorId);
                 director.setName(rs.getString("director_name"));
-                film.getDirector().add(director);
+                film.getDirectors().add(director);
             }
         }
         return filmWithRatings;
