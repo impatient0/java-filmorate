@@ -80,9 +80,13 @@ public class FilmMapperImpl implements FilmMapper {
         }
         if (updateFilmRequest.getGenres() != null) {
             film.setGenres(updateFilmRequest.getGenres());
+        } else {
+            film.setGenres(new HashSet<>());
         }
         if (updateFilmRequest.getDirectors() != null) {
             film.setDirectors(updateFilmRequest.getDirectors());
+        } else {
+            film.setDirectors(new HashSet<>());
         }
         return film;
     }
