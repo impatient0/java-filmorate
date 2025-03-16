@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -94,7 +93,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public ResponseEntity<Collection<FilmDto>> getPopularFilms(
-            @RequestParam(defaultValue = "10") int count,
+        @RequestParam(defaultValue = "2147483647") int count,
             @RequestParam(required = false) Integer genreId,
             @RequestParam(required = false) Integer year) {
         log.info("Request to get {} popular films for genre ID {} and year {} received.", count, genreId, year);
