@@ -159,6 +159,11 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         )
         """;
 
+    private static final String DELETE_DIRECTORS_QUERY = """
+        DELETE FROM film_directors
+        WHERE film_id = ?
+        """;
+
     private static final String GET_BY_DIRECTOR_ID_RATING_QUERY = """
         SELECT
             f.film_id,
@@ -368,6 +373,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
                 jdbc.update(ADD_GENRE_QUERY, film.getId(), genre.getId());
             }
         }
+        jdbc.update(DELETE_DIRECTORS_QUERY, film.getId());
         if (film.getDirectors() != null) {
             for (Director director : film.getDirectors()) {
                 jdbc.update(ADD_DIRECTORS_QUERY, film.getId(), director.getId());
