@@ -20,4 +20,5 @@ public class FilmDto {
     private MpaRating mpa;
     private Set<Genre> genres;
     private Set<Director> directors;
+    private Double rate;
 }

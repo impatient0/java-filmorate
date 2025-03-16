@@ -10,6 +10,6 @@ public class Rating {
 
     private long userId;
     private long filmId;
-    private int ratingValue;
+    private double ratingValue;
     private Timestamp ratedAt;
 }

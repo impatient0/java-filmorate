@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 
 @Component
 @SuppressWarnings("unused")
@@ -13,6 +14,11 @@ public class FilmMapperImpl implements FilmMapper {
 
     @Override
     public FilmDto mapToFilmDto(Film film) {
+        return mapToFilmDto(film, Double.NaN);
+    }
+
+    @Override
+    public FilmDto mapToFilmDto(Film film, double averageRating) {
         FilmDto filmDto = new FilmDto();
         filmDto.setId(film.getId());
         filmDto.setName(film.getName());
@@ -22,7 +28,13 @@ public class FilmMapperImpl implements FilmMapper {
         filmDto.setMpa(film.getMpa());
         filmDto.setGenres(film.getGenres());
         filmDto.setDirectors(film.getDirector());
+        filmDto.setRate(averageRating);
         return filmDto;
+    }
+
+    @Override
+    public FilmDto mapToFilmDto(FilmWithRating filmWithRating) {
+        return mapToFilmDto(filmWithRating.getFilm(), filmWithRating.getAvgRating());
     }
 
     @Override

@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.repository.DiffFreqStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
@@ -37,7 +37,7 @@ public class RecommendationService {
         Map<Long, Map<Long, Double>> userRatings = new HashMap<>();
         for (Rating rating : allRatings) {
             userRatings.computeIfAbsent(rating.getUserId(), k -> new HashMap<>())
-                .put(rating.getFilmId(), (double) rating.getRatingValue());
+                .put(rating.getFilmId(), rating.getRatingValue());
         }
 
         // Iterate through all pairs of films
@@ -105,7 +105,7 @@ public class RecommendationService {
         });
     }
 
-    public void updateDiffAndFreq(long userId, long filmId, int ratingValue) {
+    public void updateDiffAndFreq(long userId, long filmId, double ratingValue) {
         log.info("Updating diff and freq matrices for user {} and film {}", userId, filmId);
         // Load existing diff and freq data
         Map<Long, Map<Long, Double>> diff = diffFreqStorage.loadDiff();
@@ -117,17 +117,15 @@ public class RecommendationService {
         // Update diff and freq for the new rating
         for (Rating userRating : userRatings) {
             long otherFilmId = userRating.getFilmId();
-            int otherRating = userRating.getRatingValue();
+            double otherRating = userRating.getRatingValue();
 
             // Skip comparing a film to itself
             if (filmId == otherFilmId) {
                 continue;
             }
             // Update for both directions
-            updateDiffAndFreqForPair(diff, freq, filmId, otherFilmId, (double) ratingValue,
-                (double) otherRating);
-            updateDiffAndFreqForPair(diff, freq, otherFilmId, filmId, (double) otherRating,
-                (double) ratingValue);
+            updateDiffAndFreqForPair(diff, freq, filmId, otherFilmId, ratingValue, otherRating);
+            updateDiffAndFreqForPair(diff, freq, otherFilmId, filmId, otherRating, ratingValue);
         }
 
         // Save the updated matrices
@@ -144,7 +142,7 @@ public class RecommendationService {
         // Load user ratings
         List<Rating> userRatings = likesStorage.getRatingsByUser(userId);
         Map<Long, Double> userRatingMap = userRatings.stream()
-            .collect(Collectors.toMap(Rating::getFilmId, r -> (double) r.getRatingValue()));
+            .collect(Collectors.toMap(Rating::getFilmId, Rating::getRatingValue));
 
         // Calculate predicted ratings
         Map<Long, Double> predictedRatings = new HashMap<>();
@@ -175,9 +173,10 @@ public class RecommendationService {
         }
 
         // Recommend top films
-        List<Film> recommendedFilms = predictedRatings.entrySet().stream()
+        List<FilmWithRating> recommendedFilms = predictedRatings.entrySet().stream()
             .sorted(Map.Entry.<Long, Double>comparingByValue().reversed()).map(Map.Entry::getKey)
-            .map(filmStorage::getFilmById).flatMap(Optional::stream).limit(10)
+            .map(filmStorage::getFilmById).flatMap(Optional::stream)
+            .filter(f -> f.getAvgRating() > 5.0).limit(10)
             .collect(Collectors.toList());
 
         log.info("Recommended films: {}", recommendedFilms);

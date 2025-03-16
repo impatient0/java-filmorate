@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
@@ -16,11 +15,17 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.DbFilmStorage;
 import ru.yandex.practicum.filmorate.repository.DbLikesStorage;
 import ru.yandex.practicum.filmorate.repository.DbUserStorage;
-import ru.yandex.practicum.filmorate.repository.mappers.FilmWithGenresDataMapper;
+import ru.yandex.practicum.filmorate.repository.mappers.FilmWithAvgRatingDataMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.RatingRowMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 
@@ -28,7 +33,7 @@ import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({DbLikesStorage.class, DbUserStorage.class, DbFilmStorage.class, UserRowMapper.class,
-        FilmWithGenresDataMapper.class, RatingRowMapper.class})
+    FilmWithAvgRatingDataMapper.class, RatingRowMapper.class})
 public class DbLikesStorageTest {
 
     private static final String DELETE_LIKES_QUERY = "DELETE FROM ratings";
@@ -77,8 +82,8 @@ public class DbLikesStorageTest {
         mpaRating.setId(mpaId);
         mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
-        film.setGenres(new HashSet<>());
-        film.setDirector(new HashSet<>());
+        film.setGenres(genres);
+        film.setDirector(directors);
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
         return film;
@@ -170,10 +175,10 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user.getId(), film2.getId());
 
-        Collection<Film> likedFilms = likesStorage.getFilmsRatedByUser(user.getId());
+        Collection<FilmWithRating> likedFilms = likesStorage.getFilmsRatedByUser(user.getId());
 
         assertThat(likedFilms.size()).isEqualTo(2);
-        assertThat(likedFilms).contains(film1, film2);
+        assertThat(likedFilms.stream().map(FilmWithRating::getFilm)).contains(film1, film2);
     }
 
     @Test
@@ -226,16 +231,14 @@ public class DbLikesStorageTest {
         jdbc.update(ADD_LIKE_QUERY, user2.getId(), film1.getId());
         jdbc.update(ADD_LIKE_QUERY, user1.getId(), film2.getId());
 
-        List<Film> popularFilmsNoFilter = likesStorage.getPopularFilms(3, null, null);
+        List<FilmWithRating> popularFilmsNoFilter = likesStorage.getPopularFilms(3, null, null);
         assertThat(popularFilmsNoFilter).hasSize(2);
-        assertThat(popularFilmsNoFilter.get(0).getId()).isEqualTo(film1.getId()); //2 лайка
-        assertThat(popularFilmsNoFilter.get(1).getId()).isEqualTo(film2.getId()); //1 лайк
+        assertThat(popularFilmsNoFilter.get(0).getFilm().getId()).isEqualTo(film1.getId()); //2 лайка
+        assertThat(popularFilmsNoFilter.get(1).getFilm().getId()).isEqualTo(film2.getId()); //1 лайк
 
 
-        List<Film> popularFilmsByYear = likesStorage.getPopularFilms(2, null, 2001);
+        List<FilmWithRating> popularFilmsByYear = likesStorage.getPopularFilms(2, null, 2001);
         assertThat(popularFilmsByYear).hasSize(1);
-        assertThat(popularFilmsByYear.get(0).getId()).isEqualTo(film2.getId()); //1 лайк
-
-
+        assertThat(popularFilmsByYear.get(0).getFilm().getId()).isEqualTo(film2.getId()); //1 лайк
     }
 }

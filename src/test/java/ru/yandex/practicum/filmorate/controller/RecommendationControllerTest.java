@@ -86,14 +86,14 @@ public class RecommendationControllerTest {
             FilmDto[].class);
     }
 
-    private void likeFilm(long userId, long filmId) {
+    private void rateFilm(long userId, long filmId, int rating) {
         HttpEntity<Void> requestEntity = new HttpEntity<>(null);
-        restTemplate.exchange(FILMS_URL + "/" + filmId + LIKES_URL + "/" + userId, HttpMethod.PUT,
-            requestEntity, Void.class);
+        restTemplate.exchange(FILMS_URL + "/" + filmId + LIKES_URL + "/" + userId + "/" + rating,
+            HttpMethod.PUT, requestEntity, Void.class);
     }
 
     @Test
-    void testGetRecommendationsForUserWithOneLikedFilm() {
+    void testGetRecommendationsForUserWithOneRatedFilm() {
         // Create users
         ResponseEntity<UserDto> user1Entity = createUser(
             createUserDto("user1@example.com", "user1login", "User 1", LocalDate.of(2000, 1, 1)));
@@ -116,12 +116,12 @@ public class RecommendationControllerTest {
         FilmDto film2 = film2Entity.getBody();
         FilmDto film3 = film3Entity.getBody();
 
-        // User 1 likes film 1 and 2
-        likeFilm(user1.getId(), film1.getId());
-        likeFilm(user1.getId(), film2.getId());
+        // User 1 rates film 1 and 2
+        rateFilm(user1.getId(), film1.getId(), 10);
+        rateFilm(user1.getId(), film2.getId(), 9);
 
-        // User 2 likes film 2
-        likeFilm(user2.getId(), film2.getId());
+        // User 2 rates film 2
+        rateFilm(user2.getId(), film2.getId(), 8);
 
         // Get recommendations for user 2
         ResponseEntity<FilmDto[]> recommendationsEntity = getRecommendations(user2.getId());
@@ -133,7 +133,7 @@ public class RecommendationControllerTest {
     }
 
     @Test
-    void testGetRecommendationsForUserWithNoLikedFilms() {
+    void testGetRecommendationsForUserWithNoRatedFilms() {
         // Create a user
         ResponseEntity<UserDto> userEntity = createUser(
             createUserDto("user1@example.com", "user1login", "User 1", LocalDate.of(2000, 1, 1)));
@@ -147,7 +147,7 @@ public class RecommendationControllerTest {
     }
 
     @Test
-    void testGetRecommendationsForUserWhoLikedAllFilms() {
+    void testGetRecommendationsForUserWhoRatedAllFilms() {
         // Create users
         ResponseEntity<UserDto> user1Entity = createUser(
             createUserDto("user1@example.com", "user1login", "User 1", LocalDate.of(2000, 1, 1)));
@@ -170,14 +170,14 @@ public class RecommendationControllerTest {
         FilmDto film2 = film2Entity.getBody();
         FilmDto film3 = film3Entity.getBody();
 
-        // User 1 likes all films
-        likeFilm(user1.getId(), film1.getId());
-        likeFilm(user1.getId(), film2.getId());
-        likeFilm(user1.getId(), film3.getId());
+        // User 1 rates all films
+        rateFilm(user1.getId(), film1.getId(), 10);
+        rateFilm(user1.getId(), film2.getId(), 9);
+        rateFilm(user1.getId(), film3.getId(), 8);
 
-        // User 2 likes films 1 and 2
-        likeFilm(user2.getId(), film1.getId());
-        likeFilm(user2.getId(), film2.getId());
+        // User 2 rates films 1 and 2
+        rateFilm(user2.getId(), film1.getId(), 7);
+        rateFilm(user2.getId(), film2.getId(), 6);
 
         // Get recommendations for user 1
         ResponseEntity<FilmDto[]> recommendationsEntity = getRecommendations(user1.getId());
@@ -214,16 +214,16 @@ public class RecommendationControllerTest {
         FilmDto film2 = film2Entity.getBody();
         FilmDto film3 = film3Entity.getBody();
 
-        // User 1 likes film 1
-        likeFilm(user1.getId(), film1.getId());
+        // User 1 rates film 1
+        rateFilm(user1.getId(), film1.getId(), 10);
 
-        // User 2 likes films 1 and 2
-        likeFilm(user2.getId(), film1.getId());
-        likeFilm(user2.getId(), film2.getId());
+        // User 2 rates films 1 and 2
+        rateFilm(user2.getId(), film1.getId(), 9);
+        rateFilm(user2.getId(), film2.getId(), 8);
 
-        // User 3 likes film 2 and 3
-        likeFilm(user3.getId(), film2.getId());
-        likeFilm(user3.getId(), film3.getId());
+        // User 3 rates film 2 and 3
+        rateFilm(user3.getId(), film2.getId(), 7);
+        rateFilm(user3.getId(), film3.getId(), 6);
 
         // Get recommendations for user 1
         ResponseEntity<FilmDto[]> recommendations1Entity = getRecommendations(user1.getId());
@@ -248,5 +248,65 @@ public class RecommendationControllerTest {
         assertThat(recommendations3).isNotNull();
         assertThat(recommendations3.length).isEqualTo(1);
         assertThat(recommendations3[0].getId()).isEqualTo(film1.getId());
+    }
+
+    @Test
+    void testGetRecommendationsWithLowRatedFilms() {
+        // Create users
+        ResponseEntity<UserDto> user1Entity = createUser(
+            createUserDto("user1@example.com", "user1login", "User 1", LocalDate.of(2000, 1, 1)));
+        ResponseEntity<UserDto> user2Entity = createUser(
+            createUserDto("user2@example.com", "user2login", "User 2", LocalDate.of(2001, 2, 2)));
+        UserDto user1 = user1Entity.getBody();
+        UserDto user2 = user2Entity.getBody();
+
+        // Create films
+        ResponseEntity<FilmDto> film1Entity = createFilm(
+            createFilmDto("Test Film 1", "Test Description 1", LocalDate.of(2000, 1, 1), 120, 1,
+                "G"));
+        ResponseEntity<FilmDto> film2Entity = createFilm(
+            createFilmDto("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150, 2,
+                "PG"));
+        ResponseEntity<FilmDto> film3Entity = createFilm(
+            createFilmDto("Test Film 3", "Test Description 3", LocalDate.of(2002, 3, 3), 180, 3,
+                "PG-13"));
+        FilmDto film1 = film1Entity.getBody();
+        FilmDto film2 = film2Entity.getBody();
+        FilmDto film3 = film3Entity.getBody();
+
+        // User 1 rates film 1 and 2
+        rateFilm(user1.getId(), film1.getId(), 1);
+        rateFilm(user1.getId(), film2.getId(), 2);
+
+        // User 2 rates film 2 and 3
+        rateFilm(user2.getId(), film2.getId(), 8);
+        rateFilm(user2.getId(), film3.getId(), 3);
+
+        // Get recommendations for user 2
+        ResponseEntity<FilmDto[]> recommendationsEntity = getRecommendations(user2.getId());
+        assertThat(recommendationsEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        FilmDto[] recommendations = recommendationsEntity.getBody();
+        assertThat(recommendations).isNotNull();
+        assertThat(recommendations.length).isEqualTo(0);
+
+        // User 1 rates film 3
+        rateFilm(user1.getId(), film3.getId(), 10);
+
+        // Get recommendations for user 2
+        recommendationsEntity = getRecommendations(user2.getId());
+        assertThat(recommendationsEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        recommendations = recommendationsEntity.getBody();
+        assertThat(recommendations).isNotNull();
+        assertThat(recommendations.length).isEqualTo(0);
+
+        // User 2 rates film 1
+        rateFilm(user2.getId(), film1.getId(), 10);
+
+        // Get recommendations for user 1
+        recommendationsEntity = getRecommendations(user1.getId());
+        assertThat(recommendationsEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        recommendations = recommendationsEntity.getBody();
+        assertThat(recommendations).isNotNull();
+        assertThat(recommendations.length).isEqualTo(0);
     }
 }

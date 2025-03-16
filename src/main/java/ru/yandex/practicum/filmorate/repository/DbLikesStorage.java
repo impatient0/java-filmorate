@@ -7,14 +7,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 
 @Repository
 @Primary
-@SuppressWarnings("unused")
 @Slf4j
+@SuppressWarnings("unused")
 public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorage {
 
     private static final String SAVE_RATING_QUERY = """
@@ -29,7 +29,14 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
         """;
 
     private static final String GET_RATED_FILMS_QUERY = """
-        WITH film_ratings AS (
+        WITH avg_film_ratings AS (
+          SELECT
+            film_id,
+            AVG(rating_value) AS avg_rating
+          FROM ratings
+          GROUP BY
+            film_id
+        ), film_ratings AS (
           SELECT
             film_id
           FROM ratings
@@ -47,7 +54,8 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
           g.genre_id,
           g.name AS genre_name,
           d.director_id,
-          d.name AS director_name
+          d.name AS director_name,
+          COALESCE(avg_film_ratings.avg_rating, 0.0) AS avg_rating
         FROM films f
         JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id
         LEFT JOIN film_genres fg ON f.film_id = fg.film_id
@@ -55,6 +63,7 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
         JOIN film_ratings ON f.film_id = film_ratings.film_id
         LEFT JOIN film_directors fd ON f.film_id = fd.film_id
         LEFT JOIN directors d ON fd.director_id = d.director_id
+        LEFT JOIN avg_film_ratings ON f.film_id = avg_film_ratings.film_id
         ORDER BY
           f.film_id,
           g.genre_id
@@ -99,10 +108,10 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
         """;
 
     private static final String GET_POPULAR_FILMS_QUERY = """
-        WITH film_ratings AS (
+        WITH avg_film_ratings AS (
           SELECT
             film_id,
-            COUNT(film_id) AS ratings_count
+            AVG(rating_value) AS avg_rating
           FROM ratings
           GROUP BY
             film_id
@@ -119,19 +128,19 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
           g.name AS genre_name,
           d.director_id,
           d.name AS director_name,
-          COALESCE(film_ratings.ratings_count, 0) AS ratings_count
+          COALESCE(avg_film_ratings.avg_rating, 0.0) AS avg_rating
         FROM films f
         JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id
         LEFT JOIN film_genres fg ON f.film_id = fg.film_id
         LEFT JOIN genres g ON fg.genre_id = g.genre_id
-        LEFT JOIN film_ratings ON f.film_id = film_ratings.film_id
         LEFT JOIN film_directors fd ON f.film_id = fd.film_id
         LEFT JOIN directors d ON fd.director_id = d.director_id
+        LEFT JOIN avg_film_ratings ON f.film_id = avg_film_ratings.film_id
         WHERE
           (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
           AND (? IS NULL OR fg.genre_id = ?)
         ORDER BY
-          COALESCE(film_ratings.ratings_count, 0) DESC,
+          avg_rating DESC,
           f.film_id,
           g.genre_id
         LIMIT ?
@@ -144,19 +153,19 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
         """;
 
     private final RowMapper<User> userMapper;
-    private final ResultSetExtractor<List<Film>> filmExtractor;
+    private final ResultSetExtractor<List<FilmWithRating>> filmExtractor;
 
     protected DbLikesStorage(JdbcTemplate jdbc, RowMapper<Rating> mapper,
-        RowMapper<User> userMapper, ResultSetExtractor<List<Film>> filmExtractor) {
+        RowMapper<User> userMapper, ResultSetExtractor<List<FilmWithRating>> filmExtractor) {
         super(jdbc, mapper);
         this.userMapper = userMapper;
         this.filmExtractor = filmExtractor;
     }
 
     @Override
-    public void addRating(long userId, long filmId, int rating) {
+    public void addRating(long userId, long filmId, double ratingValue) {
         log.trace("Adding rating from userId={} to filmId={}", userId, filmId);
-        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId, rating);
+        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId, ratingValue);
         log.trace("Rating added, rows affected: {}", rowsAffected);
     }
 
@@ -189,9 +198,9 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     }
 
     @Override
-    public List<Film> getFilmsRatedByUser(long userId) {
+    public List<FilmWithRating> getFilmsRatedByUser(long userId) {
         log.trace("Fetching rated films for userId={}", userId);
-        List<Film> films = jdbc.query(GET_RATED_FILMS_QUERY, filmExtractor, userId);
+        List<FilmWithRating> films = jdbc.query(GET_RATED_FILMS_QUERY, filmExtractor, userId);
         log.trace("Found {} rated films for userId={}", films == null ? 0 : films.size(), userId);
         return films;
     }
@@ -214,10 +223,10 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     }
 
     @Override
-    public List<Film> getPopularFilms(long count, Integer genreId, Integer year) {
+    public List<FilmWithRating> getPopularFilms(long count, Integer genreId, Integer year) {
         log.trace("Fetching popular films with count={}, genreId={}, year={}", count, genreId,
             year);
-        List<Film> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year, genreId, genreId, count);
+        List<FilmWithRating> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year, genreId, genreId, count);
         log.trace("Found {} popular films", films == null ? 0 : films.size());
         return films;
     }
