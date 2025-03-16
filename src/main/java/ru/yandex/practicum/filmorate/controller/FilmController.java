@@ -77,7 +77,8 @@ public class FilmController {
     }
 
     @GetMapping(value = "/director/{directorId}", params = {"sortBy"})
-    public ResponseEntity<Collection<FilmDto>> getFilmById(@PathVariable long directorId, @RequestParam(value = "sortBy") Set<String> params) {
+    public ResponseEntity<Collection<FilmDto>> getFilmsForDirector(@PathVariable long directorId,
+        @RequestParam(value = "sortBy") Set<String> params) {
         log.info("Request to get films with director ID {} received.", directorId);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(filmService.getFilmsByLikes(directorId, params));
