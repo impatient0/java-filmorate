@@ -7,8 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
@@ -165,9 +163,9 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     }
 
     @Override
-    public void addRating(long userId, long filmId, int rating) {
+    public void addRating(long userId, long filmId, double ratingValue) {
         log.trace("Adding rating from userId={} to filmId={}", userId, filmId);
-        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId, rating);
+        int rowsAffected = jdbc.update(SAVE_RATING_QUERY, userId, filmId, ratingValue);
         log.trace("Rating added, rows affected: {}", rowsAffected);
     }
 

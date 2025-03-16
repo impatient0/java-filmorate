@@ -47,7 +47,8 @@ CREATE TABLE IF NOT EXISTS friendships (
 CREATE TABLE IF NOT EXISTS ratings (
     user_id BIGINT NOT NULL,
     film_id BIGINT NOT NULL,
-    rating_value INT NOT NULL,
+    rating_value DOUBLE PRECISION NOT NULL,
+    CONSTRAINT rating_value_range CHECK (rating_value >= 1.0 AND rating_value <= 10.0),
     rated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, film_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,

@@ -22,8 +22,8 @@ public class LikesController {
 
     @PutMapping(value = {"", "/{ratingValue}"})
     public ResponseEntity<Void> addRating(@PathVariable long id, @PathVariable long userId,
-        @PathVariable(required = false) Optional<Integer> ratingValue) {
-        int actualRatingValue = ratingValue.orElse(6);
+        @PathVariable(required = false) Optional<Double> ratingValue) {
+        double actualRatingValue = ratingValue.orElse(6.0);
 
         log.info("Request for user {} to rate film {} as {} received.", userId, id,
             actualRatingValue);

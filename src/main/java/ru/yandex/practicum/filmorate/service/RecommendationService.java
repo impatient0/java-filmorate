@@ -105,7 +105,7 @@ public class RecommendationService {
         });
     }
 
-    public void updateDiffAndFreq(long userId, long filmId, int ratingValue) {
+    public void updateDiffAndFreq(long userId, long filmId, double ratingValue) {
         log.info("Updating diff and freq matrices for user {} and film {}", userId, filmId);
         // Load existing diff and freq data
         Map<Long, Map<Long, Double>> diff = diffFreqStorage.loadDiff();
@@ -117,7 +117,7 @@ public class RecommendationService {
         // Update diff and freq for the new rating
         for (Rating userRating : userRatings) {
             long otherFilmId = userRating.getFilmId();
-            int otherRating = userRating.getRatingValue();
+            double otherRating = userRating.getRatingValue();
 
             // Skip comparing a film to itself
             if (filmId == otherFilmId) {

@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ public class LikesService {
     private final RecommendationService recommendationService;
     private final EventStorage eventStorage;
 
-    public void rateFilm(long userId, long filmId, int ratingValue) {
+    public void rateFilm(long userId, long filmId, double ratingValue) {
         if (userStorage.getUserById(userId).isEmpty()) {
             log.warn("Rating film failed: user with ID {} not found", userId);
             throw new UserNotFoundException("Error when rating film", userId);

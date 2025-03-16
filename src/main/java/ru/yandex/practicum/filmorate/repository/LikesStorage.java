@@ -3,12 +3,11 @@ package ru.yandex.practicum.filmorate.repository;
 import java.util.List;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Rating;
-import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 
 public interface LikesStorage {
 
-    void addRating(long userId, long filmId, int rating);
+    void addRating(long userId, long filmId, double ratingValue);
 
     void removeRating(long userId, long filmId);
 
