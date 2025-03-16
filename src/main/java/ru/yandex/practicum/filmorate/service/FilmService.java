@@ -5,6 +5,7 @@ import jakarta.validation.Validator;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
@@ -31,13 +31,12 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final Validator validator;
     private final FilmMapper mapper;
-    private final DirectorStorage directorStorage;
     private final UserStorage userStorage;
 
     public Collection<FilmDto> getAllFilms() {
         log.debug("Getting all films");
         return filmStorage.getAllFilms().stream().map(mapper::mapToFilmDto)
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public FilmDto getFilmById(long filmId) {
@@ -58,9 +57,9 @@ public class FilmService {
             throw new FilmValidationException("Error when creating new film", violationMessage);
         }
         if (newFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
-            newFilmRequest.getMpa().getId())) {
+                newFilmRequest.getMpa().getId())) {
             throw new MpaRatingNotFoundException("Error when creating new film",
-                newFilmRequest.getMpa().getId());
+                    newFilmRequest.getMpa().getId());
         }
         if (newFilmRequest.getGenres() != null) {
             for (Genre genre : newFilmRequest.getGenres()) {
@@ -82,16 +81,16 @@ public class FilmService {
             return new FilmNotFoundException("Error when updating film", updateFilmRequest.getId());
         });
         Set<ConstraintViolation<UpdateFilmRequest>> violations = validator.validate(
-            updateFilmRequest);
+                updateFilmRequest);
         if (!violations.isEmpty()) {
             String violationMessage = violations.iterator().next().getMessage();
             log.warn("Updating film failed: {}", violationMessage);
             throw new FilmValidationException("Error when updating film", violationMessage);
         }
         if (updateFilmRequest.getMpa() != null && !mpaRatingStorage.checkMpaRatingExists(
-            updateFilmRequest.getMpa().getId())) {
+                updateFilmRequest.getMpa().getId())) {
             throw new MpaRatingNotFoundException("Error when updating film",
-                updateFilmRequest.getMpa().getId());
+                    updateFilmRequest.getMpa().getId());
         }
         if (updateFilmRequest.getGenres() != null) {
             for (Genre genre : updateFilmRequest.getGenres()) {
@@ -114,8 +113,9 @@ public class FilmService {
         }
         log.debug("Getting films with directorID {}", directorId);
         List<FilmDto> list = new ArrayList<>();
-        for (Film f: film)
+        for (Film f : film) {
             list.add(mapper.mapToFilmDto(f));
+        }
         return list;
     }
 
@@ -126,6 +126,31 @@ public class FilmService {
         }
         log.debug("Deleting film with ID {}", filmId);
         filmStorage.deleteFilm(filmId);
+    }
+
+    public Collection<FilmDto> searchFilms(String query, String by) {
+        log.debug("Поиск фильмов с запросом '{}' по '{}'", query, by);
+
+        if (query == null || query.trim().isEmpty()) {
+            log.warn("Пустой запрос поиска");
+            throw new SearchParameterValidationException("Запрос поиска не может быть пустым", "Пустой query");
+        }
+
+        Set<String> validTypes = Set.of("title", "director");
+        String[] searchTypes = by.split(",");
+        boolean invalidType = Arrays.stream(searchTypes)
+                .map(String::trim)
+                .anyMatch(type -> !validTypes.contains(type));
+
+        if (invalidType) {
+            log.warn("Недопустимый тип поиска: {}", by);
+            throw new SearchParameterValidationException("Недопустимый тип поиска", "Допустимые типы: title, director");
+        }
+
+        Collection<Film> films = filmStorage.searchFilms(query.toLowerCase(), by);
+        return films.stream()
+                .map(mapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 
     public Collection<FilmDto> getCommonFilms(long userId, long friendId) {
@@ -141,7 +166,6 @@ public class FilmService {
         log.debug("Fetching common films for users {} and {}", userId, friendId);
         Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
 
-        // 🔥 Логируем данные перед маппингом
         log.debug("Fetched {} common films", commonFilms.size());
         for (Film film : commonFilms) {
             log.debug("Film: id={}, name={}, mpa={}, genres={}",

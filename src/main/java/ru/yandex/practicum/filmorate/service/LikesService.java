@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.repository.EventStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.LikesStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
@@ -24,6 +25,7 @@ public class LikesService {
     private final LikesStorage likesStorage;
     private final FilmMapper filmMapper;
     private final RecommendationService recommendationService;
+    private final EventStorage eventStorage;
 
     public void likeFilm(long userId, long filmId) {
         if (userStorage.getUserById(userId).isEmpty()) {
@@ -37,6 +39,7 @@ public class LikesService {
         log.debug("User with ID {} likes film with ID {}", userId, filmId);
         likesStorage.addRating(userId, filmId, 1);
         recommendationService.updateDiffAndFreq(userId, filmId, 1);
+        eventStorage.insertUserFeedQuery(userId, 1, 2, filmId);
     }
 
     public void unlikeFilm(long userId, long filmId) {
@@ -51,6 +54,7 @@ public class LikesService {
         log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
         likesStorage.removeRating(userId, filmId);
         recommendationService.updateDiffAndFreq(userId, filmId, -1);
+        eventStorage.insertUserFeedQuery(userId, 1, 1, filmId);
     }
 
     public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {

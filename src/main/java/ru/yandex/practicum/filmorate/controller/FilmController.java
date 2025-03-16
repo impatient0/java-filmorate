@@ -103,4 +103,15 @@ public class FilmController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(films);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<Collection<FilmDto>> searchFilms(
+            @RequestParam String query,
+            @RequestParam String by) {
+        log.info("Получен запрос на поиск фильмов с query '{}' и by '{}'", query, by);
+        Collection<FilmDto> films = filmService.searchFilms(query, by);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(films);
+    }
 }
