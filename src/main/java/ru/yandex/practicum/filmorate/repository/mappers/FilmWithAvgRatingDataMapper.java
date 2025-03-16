@@ -22,13 +22,15 @@ public class FilmWithAvgRatingDataMapper implements ResultSetExtractor<List<Film
     @Override
     public List<FilmWithRating> extractData(ResultSet rs) throws SQLException {
         List<FilmWithRating> filmWithRatings = new ArrayList<>();
-        Map<Long, Film> filmMap = new LinkedHashMap<>();
+        Map<Long, FilmWithRating> filmWithRatingMap = new LinkedHashMap<>(); // Map to hold
+        // FilmWithRating by filmId
 
         while (rs.next()) {
             long filmId = rs.getLong("film_id");
-            Film film = filmMap.get(filmId);
-            if (film == null) {
-                film = new Film();
+            FilmWithRating filmWithRating = filmWithRatingMap.get(filmId);
+
+            if (filmWithRating == null) {
+                Film film = new Film();
                 film.setId(filmId);
                 film.setName(rs.getString("film_name"));
                 film.setDescription(rs.getString("description"));
@@ -44,18 +46,21 @@ public class FilmWithAvgRatingDataMapper implements ResultSetExtractor<List<Film
 
                 film.setGenres(new HashSet<>());
                 film.setDirectors(new HashSet<>()); // Initialize director set
-                filmMap.put(filmId, film);
 
                 double avgRating = rs.getDouble("avg_rating");
-                filmWithRatings.add(new FilmWithRating(film,
-                    rs.wasNull() ? 0.0 : avgRating)); // Handle null avg_rating
+                filmWithRating = new FilmWithRating(film, rs.wasNull() ? 0.0 : avgRating);
+                filmWithRatingMap.put(filmId, filmWithRating); // Put FilmWithRating in the map
+                filmWithRatings.add(filmWithRating); // Add FilmWithRating to the list
+            } else {
+                // FilmWithRating already exists, retrieve the Film object
+                Film film = filmWithRating.getFilm();
             }
 
             int genreId = rs.getInt("genre_id");
             if (genreId != 0) {
                 String genreName = rs.getString("genre_name");
                 if (genreName != null) {
-                    film.getGenres().add(new Genre(genreId, genreName));
+                    filmWithRating.getFilm().getGenres().add(new Genre(genreId, genreName));
                 }
             }
 
@@ -64,7 +69,7 @@ public class FilmWithAvgRatingDataMapper implements ResultSetExtractor<List<Film
                 Director director = new Director();
                 director.setId(directorId);
                 director.setName(rs.getString("director_name"));
-                film.getDirectors().add(director);
+                filmWithRating.getFilm().getDirectors().add(director);
             }
         }
         return filmWithRatings;
