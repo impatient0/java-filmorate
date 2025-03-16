@@ -133,11 +133,12 @@ public class FilmService {
     }
 
     public Collection<FilmDto> searchFilms(String query, String by) {
-        log.debug("Поиск фильмов с запросом '{}' по '{}'", query, by);
+        log.debug("Searching for films with '{}' matching '{}'", by, query);
 
         if (query == null || query.trim().isEmpty()) {
-            log.warn("Пустой запрос поиска");
-            throw new SearchParameterValidationException("Запрос поиска не может быть пустым", "Пустой query");
+            log.warn("Empty search query");
+            throw new SearchParameterValidationException("Error when searching for films",
+                "Empty search query");
         }
 
         Set<String> validTypes = Set.of("title", "director");
@@ -147,8 +148,9 @@ public class FilmService {
                 .anyMatch(type -> !validTypes.contains(type));
 
         if (invalidType) {
-            log.warn("Недопустимый тип поиска: {}", by);
-            throw new SearchParameterValidationException("Недопустимый тип поиска", "Допустимые типы: title, director");
+            log.warn("Invalid search parameter: {}", by);
+            throw new SearchParameterValidationException("Error when searching for films",
+                "Allowed searching only by: title, director");
         }
 
         List<FilmWithRating> films = filmStorage.searchFilms(query.toLowerCase(), by);
