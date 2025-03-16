@@ -24,6 +24,7 @@ public class LikesService {
     private final FilmStorage filmStorage;
     private final LikesStorage likesStorage;
     private final FilmMapper filmMapper;
+    private final RecommendationService recommendationService;
     private final EventStorage eventStorage;
 
     public void likeFilm(long userId, long filmId) {
@@ -36,7 +37,8 @@ public class LikesService {
             throw new FilmNotFoundException("Error when liking film", filmId);
         }
         log.debug("User with ID {} likes film with ID {}", userId, filmId);
-        likesStorage.addLike(userId, filmId);
+        likesStorage.addRating(userId, filmId, 1);
+        recommendationService.updateDiffAndFreq(userId, filmId, 1);
         eventStorage.insertUserFeedQuery(userId, 1, 2, filmId);
     }
 
@@ -50,7 +52,8 @@ public class LikesService {
             throw new FilmNotFoundException("Error when unliking film", filmId);
         }
         log.debug("User with ID {} unlikes film with ID {}", userId, filmId);
-        likesStorage.removeLike(userId, filmId);
+        likesStorage.removeRating(userId, filmId);
+        recommendationService.updateDiffAndFreq(userId, filmId, -1);
         eventStorage.insertUserFeedQuery(userId, 1, 1, filmId);
     }
 
