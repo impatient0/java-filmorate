@@ -27,6 +27,13 @@ public class LikesController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping
+    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("Request for user {} to rate film {} as 10 received.", userId, id);
+        likesService.rateFilm(userId, id, 10);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping
     public ResponseEntity<Void> removeRating(@PathVariable long id, @PathVariable long userId) {
         log.info("Request for user {} to unrate film {} received.", userId, id);
