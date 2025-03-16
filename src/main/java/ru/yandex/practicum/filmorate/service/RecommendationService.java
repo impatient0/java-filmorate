@@ -37,7 +37,7 @@ public class RecommendationService {
         Map<Long, Map<Long, Double>> userRatings = new HashMap<>();
         for (Rating rating : allRatings) {
             userRatings.computeIfAbsent(rating.getUserId(), k -> new HashMap<>())
-                .put(rating.getFilmId(), (double) rating.getRatingValue());
+                .put(rating.getFilmId(), rating.getRatingValue());
         }
 
         // Iterate through all pairs of films
@@ -124,10 +124,8 @@ public class RecommendationService {
                 continue;
             }
             // Update for both directions
-            updateDiffAndFreqForPair(diff, freq, filmId, otherFilmId, (double) ratingValue,
-                (double) otherRating);
-            updateDiffAndFreqForPair(diff, freq, otherFilmId, filmId, (double) otherRating,
-                (double) ratingValue);
+            updateDiffAndFreqForPair(diff, freq, filmId, otherFilmId, ratingValue, otherRating);
+            updateDiffAndFreqForPair(diff, freq, otherFilmId, filmId, otherRating, ratingValue);
         }
 
         // Save the updated matrices
@@ -144,7 +142,7 @@ public class RecommendationService {
         // Load user ratings
         List<Rating> userRatings = likesStorage.getRatingsByUser(userId);
         Map<Long, Double> userRatingMap = userRatings.stream()
-            .collect(Collectors.toMap(Rating::getFilmId, r -> (double) r.getRatingValue()));
+            .collect(Collectors.toMap(Rating::getFilmId, Rating::getRatingValue));
 
         // Calculate predicted ratings
         Map<Long, Double> predictedRatings = new HashMap<>();
@@ -177,7 +175,8 @@ public class RecommendationService {
         // Recommend top films
         List<FilmWithRating> recommendedFilms = predictedRatings.entrySet().stream()
             .sorted(Map.Entry.<Long, Double>comparingByValue().reversed()).map(Map.Entry::getKey)
-            .map(filmStorage::getFilmById).flatMap(Optional::stream).limit(10)
+            .map(filmStorage::getFilmById).flatMap(Optional::stream)
+            .filter(f -> f.getAvgRating() > 5.0).limit(10)
             .collect(Collectors.toList());
 
         log.info("Recommended films: {}", recommendedFilms);
