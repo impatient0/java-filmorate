@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.repository.EventStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.LikesStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
@@ -23,6 +25,7 @@ public class LikesService {
     private final LikesStorage likesStorage;
     private final FilmMapper filmMapper;
     private final RecommendationService recommendationService;
+    private final EventStorage eventStorage;
 
     public void rateFilm(long userId, long filmId, int ratingValue) {
         if (userStorage.getUserById(userId).isEmpty()) {
@@ -37,6 +40,7 @@ public class LikesService {
             ratingValue);
         likesStorage.addRating(userId, filmId, ratingValue);
         recommendationService.updateDiffAndFreq(userId, filmId, ratingValue);
+        eventStorage.insertUserFeedQuery(userId, 1, 2, filmId);
     }
 
     public void unrateFilm(long userId, long filmId) {
@@ -50,12 +54,14 @@ public class LikesService {
         }
         log.debug("User with ID {} unrates film with ID {}", userId, filmId);
         likesStorage.removeRating(userId, filmId);
-        recommendationService.updateDiffAndFreq(userId, filmId, -1);
+        recommendationService.updateDiffAndFreq(userId, filmId, 0);
+        eventStorage.insertUserFeedQuery(userId, 1, 1, filmId);
     }
 
-    public List<FilmDto> getPopularFilms(int count) {
-        log.debug("Getting {} most popular films", count);
-        return likesStorage.getPopularFilms(count).stream().map(filmMapper::mapToFilmDto)
-            .collect(Collectors.toList());
+    public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
+        log.debug("Getting {} most popular films with genreId={} and year={}", count, genreId, year);
+        return likesStorage.getPopularFilms(count, genreId, year).stream()
+                .map(filmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 }

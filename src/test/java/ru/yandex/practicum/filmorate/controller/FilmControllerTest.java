@@ -77,7 +77,7 @@ public class FilmControllerTest {
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when creating new film", actualResponse.getMessage());
+        assertEquals("Error when creating new film", actualResponse.getError());
         assertEquals("Invalid Film data: Film name must not be blank.",
             actualResponse.getDescription());
     }
@@ -118,7 +118,7 @@ public class FilmControllerTest {
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating film", actualResponse.getMessage());
+        assertEquals("Error when updating film", actualResponse.getError());
         assertEquals("Film with ID -42 not found", actualResponse.getDescription());
     }
 
@@ -146,7 +146,7 @@ public class FilmControllerTest {
             .andReturn();
         jsonResponse = resultPut.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating film", actualResponse.getMessage());
+        assertEquals("Error when updating film", actualResponse.getError());
         assertEquals("Invalid Film data: Film name must not be blank.",
             actualResponse.getDescription());
     }
@@ -208,7 +208,7 @@ public class FilmControllerTest {
     void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
         mockMvc.perform(delete(filmsURI + "/999999")).andExpect(status().isNotFound())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.message").value("Error when deleting film"))
+            .andExpect(jsonPath("$.error").value("Error when deleting film"))
             .andExpect(jsonPath("$.description").value("Film with ID 999999 not found"));
     }
 }

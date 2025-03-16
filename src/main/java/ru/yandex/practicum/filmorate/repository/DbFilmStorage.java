@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -16,45 +16,298 @@ import ru.yandex.practicum.filmorate.model.Genre;
 @SuppressWarnings("unused")
 public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
 
-    private static final String CHECK_EXISTS_QUERY =
-        "SELECT EXISTS (SELECT 1 FROM films WHERE " + "film_id = ?)";
-    private static final String GET_ALL_QUERY = "SELECT f.film_id, "
-        + "       f.name AS film_name, f.description, f.release_date, f.duration, "
-        + "       m.mpa_id, m.name AS mpa_name, " + "       g.genre_id, g.name AS genre_name, "
-        + "       COALESCE(AVG(r.rating_value), 0.0) AS avg_rating " +
-        // Calculate average rating, default to 0 if no ratings
-        "FROM films f " + "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
-        + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
-        + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
-        + "LEFT JOIN ratings r ON f.film_id = r.film_id " + // Join with ratings table
-        "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, m.mpa_id, m.name,"
-        + " g.genre_id, g.name "
-        + // Group by all non-aggregated columns
-        "ORDER BY f.film_id, g.genre_id";
-    private static final String GET_BY_ID_QUERY = "SELECT f.film_id, "
-        + "       f.name AS film_name, f.description, f.release_date, f.duration, "
-        + "       m.mpa_id, m.name AS mpa_name, " + "       g.genre_id, g.name AS genre_name, "
-        + "       COALESCE(AVG(r.rating_value), 0.0) AS avg_rating " +
-        // Calculate average rating, default to 0 if no ratings
-        "FROM films f " + "LEFT JOIN mpa_ratings m ON f.mpa_rating_id = m.mpa_id "
-        + "LEFT JOIN film_genres fg ON f.film_id = fg.film_id "
-        + "LEFT JOIN genres g ON fg.genre_id = g.genre_id "
-        + "LEFT JOIN ratings r ON f.film_id = r.film_id " + // Join with ratings table
-        "WHERE f.film_id = ? "
-        + "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, m.mpa_id, m"
-        + ".name, g.genre_id, g.name "
-        + // Group by all non-aggregated columns
-        "ORDER BY f.film_id, g.genre_id";
-    private static final String INSERT_QUERY =
-        "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) "
-            + "VALUES (?, ?, ?, ?, ?)";
-    private static final String ADD_GENRE_QUERY =
-        "INSERT INTO film_genres (film_id, genre_id)" + " VALUES (?, ?)";
-    private static final String DELETE_GENRES_QUERY = "DELETE FROM film_genres WHERE film_id = ?";
-    private static final String UPDATE_QUERY =
-        "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, "
-            + "mpa_rating_id = ? " + "WHERE film_id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM films WHERE film_id = ?";
+    private static final String CHECK_EXISTS_QUERY = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM films
+            WHERE film_id = ?
+        )
+        """;
+
+    private static final String GET_ALL_QUERY = """
+        SELECT
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name AS mpa_name,
+            g.genre_id,
+            g.name AS genre_name,
+            d.director_id,
+            d.name AS director_name,
+            COALESCE(AVG(r.rating_value), 0.0) AS avg_rating
+        FROM films AS f
+        LEFT JOIN mpa_ratings AS m ON f.mpa_rating_id = m.mpa_id
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+        LEFT JOIN directors AS d ON fd.director_id = d.director_id
+        LEFT JOIN ratings AS r ON f.film_id = r.film_id
+        GROUP BY
+            f.film_id,
+            f.name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name,
+            g.genre_id,
+            g.name,
+            d.director_id,
+            d.name
+        ORDER BY
+            f.film_id,
+            g.genre_id
+        """;
+
+    private static final String GET_BY_ID_QUERY = """
+        SELECT
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name AS mpa_name,
+            g.genre_id,
+            g.name AS genre_name,
+            d.director_id,
+            d.name AS director_name,
+            COALESCE(AVG(r.rating_value), 0.0) AS avg_rating
+        FROM films AS f
+        LEFT JOIN mpa_ratings AS m ON f.mpa_rating_id = m.mpa_id
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+        LEFT JOIN directors AS d ON fd.director_id = d.director_id
+        LEFT JOIN ratings AS r ON f.film_id = r.film_id
+        WHERE f.film_id = ?
+        GROUP BY
+            f.film_id,
+            f.name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name,
+            g.genre_id,
+            g.name,
+            d.director_id,
+            d.name
+        """;
+
+    private static final String INSERT_QUERY = """
+        INSERT INTO films (
+            name,
+            description,
+            release_date,
+            duration,
+            mpa_rating_id
+        ) VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )
+        """;
+
+    private static final String UPDATE_QUERY = """
+        UPDATE films
+        SET
+            name = ?,
+            description = ?,
+            release_date = ?,
+            duration = ?,
+            mpa_rating_id = ?
+        WHERE film_id = ?
+        """;
+
+    private static final String DELETE_QUERY = """
+        DELETE FROM films
+        WHERE film_id = ?
+        """;
+
+    private static final String ADD_GENRE_QUERY = """
+        INSERT INTO film_genres (
+            film_id,
+            genre_id
+        ) VALUES (
+            ?,
+            ?
+        )
+        """;
+
+    private static final String DELETE_GENRES_QUERY = """
+        DELETE FROM film_genres
+        WHERE film_id = ?
+        """;
+
+    private static final String ADD_DIRECTORS_QUERY = """
+        INSERT INTO film_directors (
+            film_id,
+            director_id
+        ) VALUES (
+            ?,
+            ?
+        )
+        """;
+
+    private static final String GET_BY_DIRECTOR_ID_RATING_QUERY = """
+        SELECT
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name AS mpa_name,
+            g.genre_id,
+            g.name AS genre_name,
+            d.director_id,
+            d.name AS director_name,
+            COALESCE(AVG(r.rating_value), 0.0) AS avg_rating
+        FROM films AS f
+        JOIN film_directors AS fd ON f.film_id = fd.film_id
+        JOIN directors AS d ON fd.director_id = d.director_id
+        JOIN mpa_ratings AS m ON f.mpa_rating_id = m.mpa_id
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN ratings AS r ON f.film_id = r.film_id
+        WHERE d.director_id = ?
+        GROUP BY
+            f.film_id,
+            f.name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name,
+            g.genre_id,
+            g.name,
+            d.director_id,
+            d.name
+        ORDER BY
+            avg_rating DESC,
+            f.film_id,
+            g.genre_id
+        """;
+
+    private static final String GET_BY_DIRECTOR_ID_YEAR_QUERY = """
+        SELECT
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name AS mpa_name,
+            g.genre_id,
+            g.name AS genre_name,
+            d.director_id,
+            d.name AS director_name,
+            COALESCE(AVG(r.rating_value), 0.0) AS avg_rating
+        FROM films AS f
+        JOIN film_directors AS fd ON f.film_id = fd.film_id
+        JOIN directors AS d ON fd.director_id = d.director_id
+        LEFT JOIN mpa_ratings AS m ON f.mpa_rating_id = m.mpa_id
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN ratings AS r ON f.film_id = r.film_id
+        WHERE d.director_id = ?
+        GROUP BY
+            f.film_id,
+            f.name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name,
+            g.genre_id,
+            g.name,
+            d.director_id,
+            d.name
+        ORDER BY
+            f.release_date,
+            f.film_id DESC
+        """;
+
+    private static final String GET_COMMON_FILMS_QUERY = """
+        SELECT
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name AS mpa_name,
+            g.genre_id,
+            g.name AS genre_name,
+            d.director_id,
+            d.name AS director_name,
+            COALESCE(AVG(r.rating_value), 0.0) AS avg_rating
+        FROM films AS f
+        LEFT JOIN mpa_ratings AS m ON f.mpa_rating_id = m.mpa_id
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+        LEFT JOIN directors AS d ON fd.director_id = d.director_id
+        INNER JOIN ratings AS r ON f.film_id = r.film_id
+        WHERE r.user_id IN (?, ?)
+        GROUP BY
+            f.film_id,
+            f.name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name,
+            g.genre_id,
+            g.name,
+            d.director_id,
+            d.name
+        HAVING COUNT(DISTINCT r.user_id) = 2
+        ORDER BY avg_rating DESC
+        """;
+
+    private static final String SEARCH_QUERY = """
+        SELECT
+            f.film_id,
+            f.name AS film_name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name AS mpa_name,
+            g.genre_id,
+            g.name AS genre_name,
+            d.director_id,
+            d.name AS director_name,
+            COALESCE(AVG(r.rating_value), 0.0) AS avg_rating
+        FROM films AS f
+        LEFT JOIN mpa_ratings AS m ON f.mpa_rating_id = m.mpa_id
+        LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id
+        LEFT JOIN genres AS g ON fg.genre_id = g.genre_id
+        LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id
+        LEFT JOIN directors AS d ON fd.director_id = d.director_id
+        LEFT JOIN ratings AS r ON f.film_id = r.film_id
+        WHERE (%s)
+        GROUP BY
+            f.film_id,
+            f.name,
+            f.description,
+            f.release_date,
+            f.duration,
+            m.mpa_id,
+            m.name,
+            g.genre_id,
+            g.name,
+            d.director_id,
+            d.name
+        ORDER BY avg_rating DESC
+        """;
 
     private final ResultSetExtractor<List<FilmWithRating>> extractor;
 
@@ -77,12 +330,20 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
 
     @Override
     public long addFilm(Film film) {
-        long assignedId = insert(INSERT_QUERY, film.getName(), film.getDescription(),
-            film.getReleaseDate(), film.getDuration(),
-            film.getMpa() == null ? null : film.getMpa().getId());
+        long assignedId = insert(INSERT_QUERY,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpa() == null ? null : film.getMpa().getId());
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 jdbc.update(ADD_GENRE_QUERY, assignedId, genre.getId());
+            }
+        }
+        if (film.getDirector() != null) {
+            for (Director director : film.getDirector()) {
+                jdbc.update(ADD_DIRECTORS_QUERY, assignedId, director.getId());
             }
         }
         return assignedId;
@@ -90,12 +351,22 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
 
     @Override
     public void updateFilm(Film film) {
-        update(UPDATE_QUERY, film.getName(), film.getDescription(), film.getReleaseDate(),
-            film.getDuration(), film.getMpa() == null ? null : film.getMpa().getId(), film.getId());
+        update(UPDATE_QUERY,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpa() == null ? null : film.getMpa().getId(),
+                film.getId());
         jdbc.update(DELETE_GENRES_QUERY, film.getId());
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
                 jdbc.update(ADD_GENRE_QUERY, film.getId(), genre.getId());
+            }
+        }
+        if (film.getDirector() != null) {
+            for (Director director : film.getDirector()) {
+                jdbc.update(ADD_DIRECTORS_QUERY, film.getId(), director.getId());
             }
         }
     }
@@ -106,8 +377,46 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     }
 
     @Override
+    public List<FilmWithRating> getDirectorFilmsBylikes(long directorId, Set<String> params) {
+        List<FilmWithRating> resultList = List.of();
+        if (params.contains("likes"))
+            return jdbc.query(GET_BY_DIRECTOR_ID_RATING_QUERY, extractor, directorId);
+        else if (params.contains("year"))
+            return jdbc.query(GET_BY_DIRECTOR_ID_YEAR_QUERY, extractor, directorId);
+        return resultList;
+    }
+
+    @Override
     public void deleteFilm(long filmId) {
         delete(DELETE_QUERY, filmId);
     }
 
+    @Override
+    public List<FilmWithRating> getCommonFilms(long userId, long friendId) {
+        return jdbc.query(GET_COMMON_FILMS_QUERY, extractor, userId, friendId);
+    }
+
+    @Override
+    public List<FilmWithRating> searchFilms(String query, String by) {
+        String[] searchTypes = by.split(",");
+        List<String> conditions = new ArrayList<>();
+
+        for (String type : searchTypes) {
+            if ("title".equals(type.trim())) {
+                conditions.add("LOWER(f.name) LIKE LOWER(?)");
+            }
+            if ("director".equals(type.trim())) {
+                conditions.add("LOWER(d.name) LIKE LOWER(?)");
+            }
+        }
+
+        String whereClause = String.join(" OR ", conditions);
+        String finalQuery = String.format(SEARCH_QUERY, whereClause);
+
+        String searchPattern = "%" + query + "%";
+        Object[] params = new Object[conditions.size()];
+        Arrays.fill(params, searchPattern);
+
+        return jdbc.query(finalQuery, extractor, params);
+    }
 }

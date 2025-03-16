@@ -13,12 +13,14 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.repository.DbDiffFreqStorage;
+import ru.yandex.practicum.filmorate.repository.mappers.DiffRowMapper;
+import ru.yandex.practicum.filmorate.repository.mappers.FreqRowMapper;
 
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({DbDiffFreqStorage.class})
+@Import({DbDiffFreqStorage.class, DiffRowMapper.class, FreqRowMapper.class})
 public class DbDiffFreqStorageTest {
 
     private static final String DELETE_ITEM_DIFF_QUERY = "DELETE FROM item_diff";

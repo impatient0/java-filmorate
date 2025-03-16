@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,15 +42,15 @@ public class RecommendationService {
 
         // Iterate through all pairs of films
         for (Map<Long, Double> user1Ratings : userRatings.values()) {
-            for (Map.Entry<Long, Double> entry1 : user1Ratings.entrySet()) {
-                Long filmId1 = entry1.getKey();
-                Double rating1 = entry1.getValue();
-                for (Map.Entry<Long, Double> entry2 : user1Ratings.entrySet()) {
-                    Long filmId2 = entry2.getKey();
-                    Double rating2 = entry2.getValue();
-                    if (filmId1.equals(filmId2)) {
-                        continue; // Skip same-film comparisons
-                    }
+            List<Map.Entry<Long, Double>> ratingsList = new ArrayList<>(user1Ratings.entrySet());
+            // Ensure each pair is iterated through once
+            for (int i = 0; i < ratingsList.size(); i++) {
+                Long filmId1 = ratingsList.get(i).getKey();
+                Double rating1 = ratingsList.get(i).getValue();
+                for (int j = i + 1; j < ratingsList.size(); j++) {
+                    Long filmId2 = ratingsList.get(j).getKey();
+                    Double rating2 = ratingsList.get(j).getValue();
+
                     // Update diff and freq for both directions
                     updateDiffAndFreqForPair(diff, freq, filmId1, filmId2, rating1, rating2);
                     updateDiffAndFreqForPair(diff, freq, filmId2, filmId1, rating2, rating1);
@@ -60,7 +60,21 @@ public class RecommendationService {
 
         // Divide diff by freq
         diff.forEach((filmId1, innerMap) -> innerMap.replaceAll((filmId2, diffValue) -> {
-            Integer frequency = freq.get(filmId1).get(filmId2);
+            Map<Long, Integer> innerFreqMap = freq.get(filmId1);
+            if (innerFreqMap == null) {
+                log.warn("Unexpected null innerFreqMap for filmId1: {}", filmId1);
+                return Double.NaN;
+            }
+            Integer frequency = innerFreqMap.get(filmId2);
+            if (frequency == null) {
+                log.warn("Unexpected null frequency for filmId1: {}, filmId2: {}", filmId1,
+                    filmId2);
+                return Double.NaN;
+            }
+            if (frequency == 0) {
+                log.warn("Division by zero risk for filmId1: {}, filmId2: {}", filmId1, filmId2);
+                return Double.NaN;
+            }
             return diffValue / frequency;
         }));
 
@@ -122,7 +136,7 @@ public class RecommendationService {
         log.info("Diff and freq matrices updated for user {} and film {}", userId, filmId);
     }
 
-    public Collection<FilmDto> getRecommendations(long userId) {
+    public List<FilmDto> getRecommendations(long userId) {
         log.info("Getting recommendations for user {}", userId);
         // Load diff and freq
         Map<Long, Map<Long, Double>> diff = diffFreqStorage.loadDiff();

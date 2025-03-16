@@ -64,6 +64,7 @@ class DbFilmStorageTest {
         mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
         film.setGenres(new HashSet<>());
+        film.setDirector(new HashSet<>());
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
         return film;
@@ -121,6 +122,7 @@ class DbFilmStorageTest {
         updatedMpaRating.setName("PG");
         updatedFilm.setMpa(updatedMpaRating);
         updatedFilm.setGenres(new HashSet<>());
+        updatedFilm.setDirector(new HashSet<>());
         updatedFilm.getGenres().add(genre);
 
         filmStorage.updateFilm(updatedFilm);

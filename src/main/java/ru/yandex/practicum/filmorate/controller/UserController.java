@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -20,7 +21,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.yandex.practicum.filmorate.dto.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 @RestController
@@ -32,6 +35,7 @@ public class UserController {
 
     private final Map<Long, User> users = new HashMap<>();
     private final UserService userService;
+    private final EventService eventService;
     private final long currentId = 1L;
 
     @GetMapping
@@ -45,6 +49,12 @@ public class UserController {
     public ResponseEntity<UserDto> getUserById(@PathVariable long id) {
         log.info("Request to get user with ID {} received.", id);
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @GetMapping("/{id}/feed")
+    public ResponseEntity<Collection<Event>> getEventsById(@PathVariable long id) {
+        log.info("Request to get all events of the user with ID {} received.", id);
+        return ResponseEntity.ok(eventService.getEventById(id));
     }
 
     @PostMapping
