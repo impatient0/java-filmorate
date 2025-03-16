@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,18 +20,14 @@ public class LikesController {
 
     private final LikesService likesService;
 
-    @PutMapping("/{ratingValue}")
+    @PutMapping(value = {"", "/{ratingValue}"})
     public ResponseEntity<Void> addRating(@PathVariable long id, @PathVariable long userId,
-        @PathVariable int ratingValue) {
-        log.info("Request for user {} to rate film {} as {} received.", userId, id, ratingValue);
-        likesService.rateFilm(userId, id, ratingValue);
-        return ResponseEntity.ok().build();
-    }
+        @PathVariable(required = false) Optional<Integer> ratingValue) {
+        int actualRatingValue = ratingValue.orElse(6);
 
-    @PutMapping
-    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
-        log.info("Request for user {} to rate film {} as 10 received.", userId, id);
-        likesService.rateFilm(userId, id, 10);
+        log.info("Request for user {} to rate film {} as {} received.", userId, id,
+            actualRatingValue);
+        likesService.rateFilm(userId, id, actualRatingValue);
         return ResponseEntity.ok().build();
     }
 
