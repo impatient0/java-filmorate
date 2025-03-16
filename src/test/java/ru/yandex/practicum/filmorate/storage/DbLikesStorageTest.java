@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterEach;
@@ -16,12 +15,17 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
+import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.DbFilmStorage;
 import ru.yandex.practicum.filmorate.repository.DbLikesStorage;
 import ru.yandex.practicum.filmorate.repository.DbUserStorage;
 import ru.yandex.practicum.filmorate.repository.mappers.FilmWithAvgRatingDataMapper;
-import ru.yandex.practicum.filmorate.repository.mappers.FilmWithGenresDataMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.RatingRowMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 
@@ -29,7 +33,7 @@ import ru.yandex.practicum.filmorate.repository.mappers.UserRowMapper;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({DbLikesStorage.class, DbUserStorage.class, DbFilmStorage.class, UserRowMapper.class,
-    FilmWithGenresDataMapper.class, FilmWithAvgRatingDataMapper.class, RatingRowMapper.class})
+    FilmWithAvgRatingDataMapper.class, RatingRowMapper.class})
 public class DbLikesStorageTest {
 
     private static final String DELETE_LIKES_QUERY = "DELETE FROM ratings";
@@ -78,8 +82,8 @@ public class DbLikesStorageTest {
         mpaRating.setId(mpaId);
         mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
-        film.setGenres(new HashSet<>());
-        film.setDirector(new HashSet<>());
+        film.setGenres(genres);
+        film.setDirector(directors);
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
         return film;
