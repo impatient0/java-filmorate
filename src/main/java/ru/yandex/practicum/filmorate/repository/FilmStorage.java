@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
+import ru.yandex.practicum.filmorate.model.SearchType;
 
 public interface FilmStorage {
 
@@ -24,5 +26,5 @@ public interface FilmStorage {
 
     void deleteFilm(long filmId);
 
-    List<FilmWithRating> searchFilms(String query, String by);
+    List<FilmWithRating> searchFilms(String query, Set<SearchType> searchTypes);
 }

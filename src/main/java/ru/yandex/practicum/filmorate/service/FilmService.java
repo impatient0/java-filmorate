@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import java.util.Arrays;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +25,7 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.SearchType;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
@@ -133,8 +134,8 @@ public class FilmService {
         filmStorage.deleteFilm(filmId);
     }
 
-    public Collection<FilmDto> searchFilms(String query, String by) {
-        log.debug("Searching for films with '{}' matching '{}'", by, query);
+    public Collection<FilmDto> searchFilms(String query, Set<SearchType> searchTypes) {
+        log.debug("Searching for films with '{}' matching '{}'", searchTypes, query);
 
         if (query == null || query.trim().isEmpty()) {
             log.warn("Empty search query");
@@ -142,19 +143,13 @@ public class FilmService {
                     "Empty search query");
         }
 
-        Set<String> validTypes = Set.of("title", "director");
-        String[] searchTypes = by.split(",");
-        boolean invalidType = Arrays.stream(searchTypes)
-                .map(String::trim)
-                .anyMatch(type -> !validTypes.contains(type));
-
-        if (invalidType) {
-            log.warn("Invalid search parameter: {}", by);
+        if (searchTypes == null || searchTypes.isEmpty()) {
+            log.warn("Invalid search parameter: {}", searchTypes);
             throw new SearchParameterValidationException("Error when searching for films",
-                    "Allowed searching only by: title, director");
+                    "Search types cannot be empty");
         }
 
-        List<FilmWithRating> films = filmStorage.searchFilms(query.toLowerCase(), by);
+        List<FilmWithRating> films = filmStorage.searchFilms(query.toLowerCase(), searchTypes);
         return films.stream()
                 .map(mapper::mapToFilmDto)
                 .collect(Collectors.toList());
