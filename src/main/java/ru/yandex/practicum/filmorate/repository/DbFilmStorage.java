@@ -342,6 +342,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
         return jdbc.query(GET_COMMON_FILMS_QUERY, extractor, userId, friendId);
     }
 
+    ///
     @Override
     public Collection<Film> searchFilms(String query, String by) {
         String[] searchTypes = by.split(",");
