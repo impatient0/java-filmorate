@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.model.SearchType;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikesService;
 
@@ -94,7 +96,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public ResponseEntity<Collection<FilmDto>> getPopularFilms(
-        @RequestParam(defaultValue = "2147483647") int count,
+            @RequestParam(defaultValue = "2147483647") int count,
             @RequestParam(required = false) Integer genreId,
             @RequestParam(required = false) Integer year) {
         log.info("Request to get {} popular films for genre ID {} and year {} received.", count, genreId, year);
@@ -107,9 +109,12 @@ public class FilmController {
     @GetMapping("/search")
     public ResponseEntity<Collection<FilmDto>> searchFilms(
             @RequestParam String query,
-            @RequestParam String by) {
+            @RequestParam("by") Set<String> by) {
         log.info("Request to search for films with '{}' matching '{}' received.", by, query);
-        Collection<FilmDto> films = filmService.searchFilms(query, by);
+        Set<SearchType> searchTypes = by.stream()
+                .map(SearchType::fromString)
+                .collect(Collectors.toSet());
+        Collection<FilmDto> films = filmService.searchFilms(query, searchTypes);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(films);
