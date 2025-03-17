@@ -315,7 +315,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
             g.name,
             d.director_id,
             d.name
-        ORDER BY avg_rating DESC
+        ORDER BY avg_rating DESC, f.film_id DESC
         """;
 
     private final ResultSetExtractor<List<FilmWithRating>> extractor;
