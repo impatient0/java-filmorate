@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +21,11 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.*;
+import ru.yandex.practicum.filmorate.model.SearchType;
+import ru.yandex.practicum.filmorate.repository.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.GenreStorage;
+import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 @Service
 @RequiredArgsConstructor
@@ -141,8 +144,8 @@ public class FilmService {
         filmStorage.deleteFilm(filmId);
     }
 
-    public Collection<FilmDto> searchFilms(String query, String by) {
-        log.debug("Searching for films with '{}' matching '{}'", by, query);
+    public Collection<FilmDto> searchFilms(String query, Set<SearchType> searchTypes) {
+        log.debug("Searching for films with '{}' matching '{}'", searchTypes, query);
 
         if (query == null || query.trim().isEmpty()) {
             log.warn("Empty search query");
@@ -178,7 +181,10 @@ public class FilmService {
         log.debug("Fetched {} common films", commonFilms.size());
         for (FilmWithRating filmWithRating : commonFilms) {
             Film film = filmWithRating.getFilm();
-            log.debug("Film: id={}, name={}, mpa={}, genres={}, rating={}", film.getId(), film.getName(), film.getMpa() != null ? film.getMpa().getName() : "null", film.getGenres(), filmWithRating.getAvgRating());
+            log.debug("Film: id={}, name={}, mpa={}, genres={}, rating={}",
+                    film.getId(), film.getName(),
+                    film.getMpa() != null ? film.getMpa().getName() : "null", film.getGenres(),
+                    filmWithRating.getAvgRating());
         }
 
         return commonFilms.stream().map(mapper::mapToFilmDto).collect(Collectors.toList());
