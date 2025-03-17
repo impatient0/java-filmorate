@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS user_feed (
     operation_name VARCHAR(50) NOT NULL,
     entity_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 INSERT INTO mpa_ratings (name)
