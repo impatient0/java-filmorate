@@ -11,7 +11,9 @@ import ru.yandex.practicum.filmorate.exception.InvalidFriendshipRequestException
 import ru.yandex.practicum.filmorate.exception.SelfFriendshipException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Events;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
+import ru.yandex.practicum.filmorate.model.Operations;
 import ru.yandex.practicum.filmorate.repository.EventStorage;
 import ru.yandex.practicum.filmorate.repository.FriendshipStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
@@ -49,14 +51,14 @@ public class FriendsService {
             if (statusReversed.isEmpty()) {
                 friendshipStorage.insertDirectionalFriendship(userId, friendId,
                     FriendshipStatus.PENDING);
-                eventStorage.insertUserFeedQuery(userId, 3, 2, friendId);
+                eventStorage.insertUserFeedQuery(userId, Events.FRIEND.name(), Operations.UPDATE.name(), friendId);
                 log.debug("Sent friend request from user {} to user {}", userId, friendId);
             } else {
                 friendshipStorage.insertDirectionalFriendship(userId, friendId,
                     FriendshipStatus.CONFIRMED);
                 friendshipStorage.updateFriendshipStatus(friendId, userId,
                     FriendshipStatus.CONFIRMED);
-                eventStorage.insertUserFeedQuery(userId, 3, 3, friendId);
+                eventStorage.insertUserFeedQuery(userId, Events.FRIEND.name(), Operations.ADD.name(), friendId);
                 log.debug("Confirmed friend request from user {} to user {}", friendId, userId);
             }
         } else {
@@ -85,7 +87,7 @@ public class FriendsService {
         }
         log.debug("Removing friendship between users {} and {}", userId, friendId);
         friendshipStorage.deleteDirectionalFriendship(userId, friendId);
-        eventStorage.insertUserFeedQuery(userId, 3, 1, friendId);
+        eventStorage.insertUserFeedQuery(userId, Events.FRIEND.name(), Operations.REMOVE.name(), friendId);
         friendshipStorage.updateFriendshipStatus(friendId, userId, FriendshipStatus.PENDING);
     }
 

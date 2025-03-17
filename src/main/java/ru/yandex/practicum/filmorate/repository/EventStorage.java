@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public interface EventStorage {
 
-    void insertUserFeedQuery(long userId, int eventId, int operationId, long entityId);
+    void insertUserFeedQuery(long userId, String eventName, String operationName, long entityId);
 
     ArrayList<Event> getUserEvents(long userId);
 
