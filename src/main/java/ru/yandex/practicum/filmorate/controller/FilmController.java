@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -78,7 +77,8 @@ public class FilmController {
     }
 
     @GetMapping(value = "/director/{directorId}", params = {"sortBy"})
-    public ResponseEntity<Collection<FilmDto>> getFilmById(@PathVariable long directorId, @RequestParam(value = "sortBy") Set<String> params) {
+    public ResponseEntity<Collection<FilmDto>> getFilmsForDirector(@PathVariable long directorId,
+            @RequestParam(value = "sortBy") Set<String> params) {
         log.info("Request to get films with director ID {} received.", directorId);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(filmService.getFilmsByLikes(directorId, params));
@@ -94,7 +94,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public ResponseEntity<Collection<FilmDto>> getPopularFilms(
-            @RequestParam(defaultValue = "10") int count,
+            @RequestParam(defaultValue = "2147483647") int count,
             @RequestParam(required = false) Integer genreId,
             @RequestParam(required = false) Integer year) {
         log.info("Request to get {} popular films for genre ID {} and year {} received.", count, genreId, year);
@@ -108,7 +108,7 @@ public class FilmController {
     public ResponseEntity<Collection<FilmDto>> searchFilms(
             @RequestParam String query,
             @RequestParam String by) {
-        log.info("Получен запрос на поиск фильмов с query '{}' и by '{}'", query, by);
+        log.info("Request to search for films with '{}' matching '{}' received.", by, query);
         Collection<FilmDto> films = filmService.searchFilms(query, by);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)

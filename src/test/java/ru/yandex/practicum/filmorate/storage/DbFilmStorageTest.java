@@ -15,15 +15,16 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.repository.DbFilmStorage;
-import ru.yandex.practicum.filmorate.repository.mappers.FilmWithGenresDataMapper;
+import ru.yandex.practicum.filmorate.repository.mappers.FilmWithAvgRatingDataMapper;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({DbFilmStorage.class, FilmWithGenresDataMapper.class})
+@Import({DbFilmStorage.class, FilmWithAvgRatingDataMapper.class})
 class DbFilmStorageTest {
 
     private static final String DELETE_FILMS_QUERY = "DELETE FROM films";
@@ -63,7 +64,7 @@ class DbFilmStorageTest {
         mpaRating.setName(mpaName);
         film.setMpa(mpaRating);
         film.setGenres(new HashSet<>());
-        film.setDirector(new HashSet<>());
+        film.setDirectors(new HashSet<>());
         long filmId = filmStorage.addFilm(film);
         film.setId(filmId);
         return film;
@@ -85,9 +86,10 @@ class DbFilmStorageTest {
         Film film = createFilm("Test Film", "Test Description", LocalDate.of(2000, 1, 1), 120, 1,
             "G");
 
-        Optional<Film> filmOptional = filmStorage.getFilmById(film.getId());
+        Optional<FilmWithRating> filmOptional = filmStorage.getFilmById(film.getId());
 
-        assertThat(filmOptional).isPresent().hasValueSatisfying(retrievedFilm -> {
+        assertThat(filmOptional).isPresent().hasValueSatisfying(retrievedFilmWithRating -> {
+            Film retrievedFilm = retrievedFilmWithRating.getFilm();
             assertThat(retrievedFilm).hasFieldOrPropertyWithValue("id", film.getId());
             assertThat(retrievedFilm).hasFieldOrPropertyWithValue("name", film.getName());
             assertThat(retrievedFilm).hasFieldOrPropertyWithValue("description",
@@ -120,13 +122,14 @@ class DbFilmStorageTest {
         updatedMpaRating.setName("PG");
         updatedFilm.setMpa(updatedMpaRating);
         updatedFilm.setGenres(new HashSet<>());
-        updatedFilm.setDirector(new HashSet<>());
+        updatedFilm.setDirectors(new HashSet<>());
         updatedFilm.getGenres().add(genre);
 
         filmStorage.updateFilm(updatedFilm);
 
-        Optional<Film> retrievedFilm = filmStorage.getFilmById(film.getId());
-        assertThat(retrievedFilm).isPresent().get().isEqualTo(updatedFilm);
+        Optional<FilmWithRating> retrievedFilm = filmStorage.getFilmById(film.getId());
+        assertThat(retrievedFilm).isPresent();
+        assertThat(retrievedFilm.get().getFilm()).isEqualTo(updatedFilm);
     }
 
     @Test
@@ -147,9 +150,9 @@ class DbFilmStorageTest {
         Film film2 = createFilm("Test Film 2", "Test Description 2", LocalDate.of(2001, 2, 2), 150,
             2, "PG");
 
-        Collection<Film> films = filmStorage.getAllFilms();
+        Collection<FilmWithRating> films = filmStorage.getAllFilms();
         assertThat(films.size()).isEqualTo(2);
-        assertThat(films).contains(film1, film2);
+        assertThat(films.stream().map(FilmWithRating::getFilm)).contains(film1, film2);
     }
 
     @Test

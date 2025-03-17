@@ -19,17 +19,22 @@ public class LikesController {
 
     private final LikesService likesService;
 
-    @PutMapping
-    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
-        log.info("Request to add like from user {} to film {} received.", userId, id);
-        likesService.likeFilm(userId, id);
+    @PutMapping(value = {"", "/{ratingValue}"})
+    public ResponseEntity<Void> addRating(@PathVariable long id, @PathVariable long userId,
+        @PathVariable(required = false) Double ratingValue) {
+        if (ratingValue == null) {
+            ratingValue = 6.0;
+        }
+
+        log.info("Request for user {} to rate film {} as {} received.", userId, id, ratingValue);
+        likesService.rateFilm(userId, id, ratingValue);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> removeLike(@PathVariable long id, @PathVariable long userId) {
-        log.info("Request to remove like from user {} to film {} received.", userId, id);
-        likesService.unlikeFilm(userId, id);
+    public ResponseEntity<Void> removeRating(@PathVariable long id, @PathVariable long userId) {
+        log.info("Request for user {} to unrate film {} received.", userId, id);
+        likesService.unrateFilm(userId, id);
         return ResponseEntity.ok().build();
     }
 

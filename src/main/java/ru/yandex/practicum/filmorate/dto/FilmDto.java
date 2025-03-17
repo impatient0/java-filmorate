@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.dto;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -18,6 +18,7 @@ public class FilmDto {
     private LocalDate releaseDate;
     private int duration;
     private MpaRating mpa;
-    private Set<Genre> genres;
-    private Set<Director> directors;
+    private List<Genre> genres;
+    private List<Director> directors;
+    private Double rate;
 }
