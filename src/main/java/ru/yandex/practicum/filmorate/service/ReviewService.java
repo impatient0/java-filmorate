@@ -40,18 +40,22 @@ public class ReviewService {
         if (request.getIsPositive() == null) {
             throw new InternalServerException("Review create Fail: isPositive cannot be null");
         }
-        if (request.getUserId() == null || request.getUserId() <= 0) {
-            throw new UserNotFoundException("User not found", request.getUserId());
-        }
-        if (request.getFilmId() == null || request.getFilmId() <= 0) {
-            throw new FilmNotFoundException("Film not found", request.getFilmId());
+
+        Long userId = request.getUserId();
+        if (userId == null || userId <= 0) {
+            throw new UserNotFoundException("User not found", userId != null ? userId : 0L);
         }
 
-        if (!userStorage.checkUserExists(request.getUserId())) {
-            throw new UserNotFoundException("User not found", request.getUserId());
+        Long filmId = request.getFilmId();
+        if (filmId == null || filmId <= 0) {
+            throw new FilmNotFoundException("Film not found", filmId != null ? filmId : 0L);
         }
-        if (!filmStorage.checkFilmExists(request.getFilmId())) {
-            throw new FilmNotFoundException("Film not found", request.getFilmId());
+
+        if (!userStorage.checkUserExists(userId)) {
+            throw new UserNotFoundException("User not found", userId);
+        }
+        if (!filmStorage.checkFilmExists(filmId)) {
+            throw new FilmNotFoundException("Film not found", filmId);
         }
 
         try {
@@ -65,6 +69,7 @@ public class ReviewService {
         }
     }
 
+
     // Остальные методы остаются без изменений
     public ReviewDto updateReview(UpdateReviewRequest request) {
         Review review = reviewStorage.getReviewById(request.getReviewId())
@@ -77,10 +82,13 @@ public class ReviewService {
     }
 
     public void deleteReview(long reviewId) {
-        eventStorage.insertUserFeedQuery(reviewStorage.getReviewById(reviewId).get().getUserId(), 2, 1, reviewId);
+        Review review = reviewStorage.getReviewById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("Review not found", reviewId));
+        eventStorage.insertUserFeedQuery(review.getUserId(), 2, 1, reviewId);
         reviewStorage.deleteReview(reviewId);
         log.debug("Deleted review with ID: {}", reviewId);
     }
+
 
     public ReviewDto getReviewById(long reviewId) {
         Review review = reviewStorage.getReviewById(reviewId)
@@ -101,19 +109,29 @@ public class ReviewService {
         if (reviewStorage.getReviewById(reviewId).isEmpty()) {
             throw new ReviewNotFoundException("Review not found", reviewId);
         }
+        if (!userStorage.checkUserExists(userId)) {
+            throw new UserNotFoundException("User not found", userId);
+        }
         reviewStorage.addLike(reviewId, userId);
         log.debug("Added like to review {} by user {}", reviewId, userId);
     }
 
     public void addDislike(long reviewId, long userId) {
-        Review review = reviewStorage.getReviewById(reviewId)
+        reviewStorage.getReviewById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found", reviewId));
+
+        if (!userStorage.checkUserExists(userId)) {
+            throw new UserNotFoundException("User not found", userId);
+        }
+
         if (reviewStorage.hasDislike(reviewId, userId)) {
             throw new InternalServerException("User " + userId + " already disliked review " + reviewId);
         }
+
         reviewStorage.addDislike(reviewId, userId);
         log.debug("Added dislike to review {} by user {}", reviewId, userId);
     }
+
 
     public void removeLike(long reviewId, long userId) {
         if (reviewStorage.getReviewById(reviewId).isEmpty()) {
