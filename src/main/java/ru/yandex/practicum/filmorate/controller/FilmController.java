@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -78,7 +78,7 @@ public class FilmController {
 
     @GetMapping(value = "/director/{directorId}", params = {"sortBy"})
     public ResponseEntity<Collection<FilmDto>> getFilmsForDirector(@PathVariable long directorId,
-        @RequestParam(value = "sortBy") Set<String> params) {
+        @RequestParam(value = "sortBy") String params) {
         log.info("Request to get films with director ID {} received.", directorId);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(filmService.getFilmsByLikes(directorId, params));
