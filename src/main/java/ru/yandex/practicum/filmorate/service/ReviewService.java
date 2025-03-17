@@ -15,6 +15,8 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.model.Events;
+import ru.yandex.practicum.filmorate.model.Operations;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.repository.EventStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
@@ -62,7 +64,7 @@ public class ReviewService {
             Review review = reviewMapper.mapToReviewModel(request);
             Review added = reviewStorage.addReview(review);
             log.debug("Added review: {}", added);
-            eventStorage.insertUserFeedQuery(added.getUserId(), 2, 2, added.getReviewId());
+            eventStorage.insertUserFeedQuery(added.getUserId(), Events.REVIEW.name(), Operations.ADD.name(), added.getReviewId());
             return reviewMapper.mapToReviewDto(added);
         } catch (DataIntegrityViolationException e) {
             throw new InternalServerException("Review create Fail: database integrity violation", e);
@@ -77,14 +79,14 @@ public class ReviewService {
         review = reviewMapper.updateReviewFields(review, request);
         Review updated = reviewStorage.updateReview(review);
         log.debug("Updated review: {}", updated);
-        eventStorage.insertUserFeedQuery(updated.getUserId(), 2, 3, updated.getReviewId());
+        eventStorage.insertUserFeedQuery(updated.getUserId(), Events.REVIEW.name(), Operations.UPDATE.name(), updated.getReviewId());
         return reviewMapper.mapToReviewDto(updated);
     }
 
     public void deleteReview(long reviewId) {
         Review review = reviewStorage.getReviewById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("Review not found", reviewId));
-        eventStorage.insertUserFeedQuery(review.getUserId(), 2, 1, reviewId);
+        eventStorage.insertUserFeedQuery(review.getUserId(), Events.REVIEW.name(), Operations.REMOVE.name(), reviewId);
         reviewStorage.deleteReview(reviewId);
         log.debug("Deleted review with ID: {}", reviewId);
     }
