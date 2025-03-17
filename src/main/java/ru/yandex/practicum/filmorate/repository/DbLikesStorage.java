@@ -121,8 +121,11 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
             SELECT
                 f.film_id
             FROM films f
-            LEFT JOIN FilmAvgRatings fa
-            ON f.film_id = fa.film_id
+            LEFT JOIN film_genres fg ON f.film_id = fg.film_id
+            LEFT JOIN FilmAvgRatings fa ON f.film_id = fa.film_id
+            WHERE
+                (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
+                AND (? IS NULL OR fg.genre_id = ?)
             ORDER BY COALESCE(fa.avg_rating, 0) DESC, f.film_id
             LIMIT ?
         )
@@ -145,11 +148,8 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
         LEFT JOIN genres g ON fg.genre_id = g.genre_id
         LEFT JOIN film_directors fd ON f.film_id = fd.film_id
         LEFT JOIN directors d ON fd.director_id = d.director_id
-        INNER JOIN TopFilmIds ON f.film_id = TopFilmIds.film_id -- Join with the CTE to filter by top film IDs
-        LEFT JOIN FilmAvgRatings ON f.film_id = FilmAvgRatings.film_id -- Re-join to get the average rating
-        WHERE
-            (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
-            AND (? IS NULL OR fg.genre_id = ?)
+        INNER JOIN TopFilmIds ON f.film_id = TopFilmIds.film_id
+        LEFT JOIN FilmAvgRatings ON f.film_id = FilmAvgRatings.film_id
         ORDER BY
             avg_rating DESC,
             f.film_id,
@@ -240,8 +240,8 @@ public class DbLikesStorage extends DbBaseStorage<Rating> implements LikesStorag
     public List<FilmWithRating> getPopularFilms(long count, Integer genreId, Integer year) {
         log.trace("Fetching popular films with count={}, genreId={}, year={}", count, genreId,
             year);
-        List<FilmWithRating> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, count, year,
-            year, genreId, genreId);
+        List<FilmWithRating> films = jdbc.query(GET_POPULAR_FILMS_QUERY, filmExtractor, year, year,
+            genreId, genreId, count);
         log.trace("Found {} popular films", films == null ? 0 : films.size());
         return films;
     }
