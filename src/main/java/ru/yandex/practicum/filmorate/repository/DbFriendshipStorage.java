@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -31,10 +30,10 @@ public class DbFriendshipStorage extends DbBaseStorage<User> implements Friendsh
     private static final String DELETE_DIRECTIONAL_FRIENDSHIP_QUERY =
         "DELETE FROM friendships " + "WHERE user_id = ? AND friend_id = ?";
     private static final String GET_USER_FRIENDS_QUERY = "SELECT u.* FROM users u JOIN "
-        + "friendships f ON u.user_id = f.friend_id WHERE f.user_id = ?";
+        + "friendships f ON u.user_id = f.friend_id WHERE f.user_id = ? ORDER BY u.user_id";
     private static final String GET_COMMON_FRIENDS_QUERY = "SELECT u.* FROM users u JOIN "
         + "friendships f1 ON u.user_id = f1.friend_id AND f1.user_id = ? JOIN friendships f2 ON"
-        + " u.user_id = f2.friend_id AND f2.user_id = ?";
+        + " u.user_id = f2.friend_id AND f2.user_id = ? ORDER BY u.user_id";
 
     public DbFriendshipStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -68,12 +67,12 @@ public class DbFriendshipStorage extends DbBaseStorage<User> implements Friendsh
     }
 
     @Override
-    public Set<User> getUserFriends(long userId) {
-        return new HashSet<>(getMultiple(GET_USER_FRIENDS_QUERY, userId));
+    public List<User> getUserFriends(long userId) {
+        return getMultiple(GET_USER_FRIENDS_QUERY, userId);
     }
 
     @Override
-    public Set<User> getCommonFriends(long userId1, long userId2) {
-        return new HashSet<>(getMultiple(GET_COMMON_FRIENDS_QUERY, userId1, userId2));
+    public List<User> getCommonFriends(long userId1, long userId2) {
+        return getMultiple(GET_COMMON_FRIENDS_QUERY, userId1, userId2);
     }
 }

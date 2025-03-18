@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -28,6 +32,7 @@ public class UserControllerTest {
     private static final String MOCK_USER_LOGIN = "john_doe";
     private static final String MOCK_USER_NAME = "John Doe";
     private static final LocalDate MOCK_USER_BIRTHDAY = LocalDate.of(1990, 5, 15);
+    private static final String usersURI = "/users";
 
     @Autowired
     @SuppressWarnings("unused")
@@ -47,10 +52,10 @@ public class UserControllerTest {
         user.setBirthday(MOCK_USER_BIRTHDAY);
 
         mockMvc.perform(
-                MockMvcRequestBuilders.post("/users").content(mapper.writeValueAsString(user))
+                MockMvcRequestBuilders.post(usersURI).content(mapper.writeValueAsString(user))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated());
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/users"))
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(usersURI))
             .andExpect(status().isOk()).andReturn();
         String jsonResponse = result.getResponse().getContentAsString();
         List<User> actualResponse = mapper.readValue(jsonResponse, new TypeReference<>() {
@@ -71,13 +76,13 @@ public class UserControllerTest {
         user.setName(MOCK_USER_NAME);
         user.setBirthday(MOCK_USER_BIRTHDAY);
         MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.post("/users").content(mapper.writeValueAsString(user))
+                MockMvcRequestBuilders.post(usersURI).content(mapper.writeValueAsString(user))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest()).andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when creating new user", actualResponse.getMessage());
+        assertEquals("Error when creating new user", actualResponse.getError());
         assertEquals("Invalid User data: E-mail must be valid.", actualResponse.getDescription());
     }
 
@@ -90,7 +95,7 @@ public class UserControllerTest {
         user.setName(MOCK_USER_NAME);
         user.setBirthday(MOCK_USER_BIRTHDAY);
         MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.post("/users").content(mapper.writeValueAsString(user))
+                MockMvcRequestBuilders.post(usersURI).content(mapper.writeValueAsString(user))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated()).andReturn();
 
@@ -110,7 +115,7 @@ public class UserControllerTest {
         user.setLogin(MOCK_USER_LOGIN);
         user.setBirthday(MOCK_USER_BIRTHDAY);
         MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.post("/users").content(mapper.writeValueAsString(user))
+                MockMvcRequestBuilders.post(usersURI).content(mapper.writeValueAsString(user))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated()).andReturn();
 
@@ -133,13 +138,13 @@ public class UserControllerTest {
         user.setBirthday(MOCK_USER_BIRTHDAY);
         user.setId(-42L);
         MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.put("/users").content(mapper.writeValueAsString(user))
+                MockMvcRequestBuilders.put(usersURI).content(mapper.writeValueAsString(user))
                     .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
             .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating user", actualResponse.getMessage());
+        assertEquals("Error when updating user", actualResponse.getError());
         assertEquals("User with ID -42 not found", actualResponse.getDescription());
     }
 
@@ -152,7 +157,7 @@ public class UserControllerTest {
         user.setName(MOCK_USER_NAME);
         user.setBirthday(MOCK_USER_BIRTHDAY);
         MvcResult resultPost = mockMvc.perform(
-                MockMvcRequestBuilders.post("/users").content(mapper.writeValueAsString(user))
+                MockMvcRequestBuilders.post(usersURI).content(mapper.writeValueAsString(user))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andReturn();
 
@@ -162,12 +167,12 @@ public class UserControllerTest {
         newUser.setEmail("invalid");
         newUser.setId(createdUser.getId());
         MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.put("/users").content(mapper.writeValueAsString(newUser))
+                MockMvcRequestBuilders.put(usersURI).content(mapper.writeValueAsString(newUser))
                     .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
             .andReturn();
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating user", actualResponse.getMessage());
+        assertEquals("Error when updating user", actualResponse.getError());
         assertEquals("Invalid User data: E-mail must be valid.", actualResponse.getDescription());
     }
 
@@ -181,7 +186,7 @@ public class UserControllerTest {
         user.setBirthday(MOCK_USER_BIRTHDAY);
 
         MvcResult resultPost = mockMvc.perform(
-                MockMvcRequestBuilders.post("/users").content(mapper.writeValueAsString(user))
+                MockMvcRequestBuilders.post(usersURI).content(mapper.writeValueAsString(user))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andReturn();
 
@@ -195,7 +200,7 @@ public class UserControllerTest {
         newUser.setBirthday(LocalDate.of(1999, 1, 1));
         newUser.setId(createdUser.getId());
         MvcResult resultPut = mockMvc.perform(
-                MockMvcRequestBuilders.put("/users").content(mapper.writeValueAsString(newUser))
+                MockMvcRequestBuilders.put(usersURI).content(mapper.writeValueAsString(newUser))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk()).andReturn();
         String jsonResponsePut = resultPut.getResponse().getContentAsString();
@@ -204,5 +209,33 @@ public class UserControllerTest {
         assertEquals(newUser.getLogin(), actualResponse.getLogin());
         assertEquals(newUser.getName(), actualResponse.getName());
         assertEquals(newUser.getBirthday(), actualResponse.getBirthday());
+    }
+
+    @Test
+    void shouldDeleteUser() throws Exception {
+        User user = new User();
+        user.setEmail(MOCK_USER_EMAIL);
+        user.setLogin(MOCK_USER_LOGIN);
+        user.setName(MOCK_USER_NAME);
+        user.setBirthday(MOCK_USER_BIRTHDAY);
+        MvcResult resultPost = mockMvc.perform(
+                post(usersURI).content(mapper.writeValueAsString(user))
+                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isCreated())
+            .andReturn();
+        String jsonResponse = resultPost.getResponse().getContentAsString();
+        User createdUser = mapper.readValue(jsonResponse, User.class);
+
+        mockMvc.perform(delete(usersURI + "/" + createdUser.getId()))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get(usersURI + "/" + createdUser.getId())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
+        mockMvc.perform(delete(usersURI + "/999999")).andExpect(status().isNotFound())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Error when deleting user"))
+            .andExpect(jsonPath("$.description").value("User with ID 999999 not found"));
     }
 }

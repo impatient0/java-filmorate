@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,10 @@ import ru.yandex.practicum.filmorate.exception.InvalidFriendshipRequestException
 import ru.yandex.practicum.filmorate.exception.SelfFriendshipException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Events;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
+import ru.yandex.practicum.filmorate.model.Operations;
+import ru.yandex.practicum.filmorate.repository.EventStorage;
 import ru.yandex.practicum.filmorate.repository.FriendshipStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 
@@ -23,6 +26,7 @@ public class FriendsService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
     private final UserMapper mapper;
+    private final EventStorage eventStorage;
 
     public void addFriend(long userId, long friendId) {
         if (userId == friendId) {
@@ -47,12 +51,14 @@ public class FriendsService {
             if (statusReversed.isEmpty()) {
                 friendshipStorage.insertDirectionalFriendship(userId, friendId,
                     FriendshipStatus.PENDING);
+                eventStorage.insertUserFeedQuery(userId, Events.FRIEND.name(), Operations.ADD.name(), friendId);
                 log.debug("Sent friend request from user {} to user {}", userId, friendId);
             } else {
                 friendshipStorage.insertDirectionalFriendship(userId, friendId,
                     FriendshipStatus.CONFIRMED);
                 friendshipStorage.updateFriendshipStatus(friendId, userId,
                     FriendshipStatus.CONFIRMED);
+                eventStorage.insertUserFeedQuery(userId, Events.FRIEND.name(), Operations.UPDATE.name(), friendId);
                 log.debug("Confirmed friend request from user {} to user {}", friendId, userId);
             }
         } else {
@@ -81,23 +87,24 @@ public class FriendsService {
         }
         log.debug("Removing friendship between users {} and {}", userId, friendId);
         friendshipStorage.deleteDirectionalFriendship(userId, friendId);
+        eventStorage.insertUserFeedQuery(userId, Events.FRIEND.name(), Operations.REMOVE.name(), friendId);
         friendshipStorage.updateFriendshipStatus(friendId, userId, FriendshipStatus.PENDING);
     }
 
-    public Set<UserDto> getUserFriends(long userId) {
+    public List<UserDto> getUserFriends(long userId) {
         if (userStorage.getUserById(userId).isEmpty()) {
             log.warn("Getting friends failed: user with ID {} not found", userId);
             throw new UserNotFoundException("Error when getting friends", userId);
         }
         log.debug("Getting friends of user with ID {}", userId);
         return friendshipStorage.getUserFriends(userId).stream().map(mapper::mapToUserDto)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
-    public Set<UserDto> getCommonFriends(long userId1, long userId2) {
+    public List<UserDto> getCommonFriends(long userId1, long userId2) {
         log.debug("Getting common friends of users {} and {}", userId1, userId2);
         return friendshipStorage.getCommonFriends(userId1, userId2).stream()
-            .map(mapper::mapToUserDto).collect(Collectors.toSet());
+            .map(mapper::mapToUserDto).collect(Collectors.toList());
     }
 
 }

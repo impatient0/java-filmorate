@@ -2,10 +2,14 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,14 +22,15 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.model.SearchType;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikesService;
 
 @RestController
 @RequestMapping("/films")
-@Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
+@Slf4j
 public class FilmController {
 
     private final FilmService filmService;
@@ -35,14 +40,14 @@ public class FilmController {
     public ResponseEntity<Collection<FilmDto>> getAllFilms() {
         log.info("Request to get all films received.");
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-            .body(filmService.getAllFilms());
+                .body(filmService.getAllFilms());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FilmDto> getFilmById(@PathVariable long id) {
         log.info("Request to get film with ID {} received.", id);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-            .body(filmService.getFilmById(id));
+                .body(filmService.getFilmById(id));
     }
 
     @PostMapping
@@ -50,10 +55,10 @@ public class FilmController {
         log.info("Request to create new film received: {}", newFilmRequest);
         FilmDto createdFilm = filmService.addFilm(newFilmRequest);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-            .buildAndExpand(createdFilm.getId()).toUri();
+                .buildAndExpand(createdFilm.getId()).toUri();
         log.info("New film created with ID {}", createdFilm.getId());
         return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON)
-            .body(createdFilm);
+                .body(createdFilm);
     }
 
     @PutMapping
@@ -64,11 +69,55 @@ public class FilmController {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(updatedFilm);
     }
 
+    @GetMapping("/common")
+    public ResponseEntity<Collection<FilmDto>> getCommonFilms(
+            @RequestParam long userId,
+            @RequestParam long friendId) {
+        log.info("Request to get common films for users {} and {}", userId, friendId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(filmService.getCommonFilms(userId, friendId));
+    }
+
+    @GetMapping(value = "/director/{directorId}", params = {"sortBy"})
+    public ResponseEntity<Collection<FilmDto>> getFilmsForDirector(@PathVariable long directorId,
+                                                                   @RequestParam(value = "sortBy") String params) {
+        log.info("Request to get films with director ID {} received.", directorId);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+                .body(filmService.getFilmsByLikes(directorId, params));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFilm(@PathVariable long id) {
+        log.info("Request to delete film with ID {} received.", id);
+        filmService.deleteFilm(id);
+        log.info("Film with ID {} deleted.", id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/popular")
     public ResponseEntity<Collection<FilmDto>> getPopularFilms(
-        @RequestParam(required = false, defaultValue = "10") int count) {
-        log.info("Request to get {} popular films received.", count);
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
-            .body(likesService.getPopularFilms(count));
+            @RequestParam(defaultValue = "2147483647") int count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
+        log.info("Request to get {} popular films for genre ID {} and year {} received.", count, genreId, year);
+        Collection<FilmDto> films = likesService.getPopularFilms(count, genreId, year);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(films);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Collection<FilmDto>> searchFilms(
+            @RequestParam String query,
+            @RequestParam("by") Set<String> by) {
+        log.info("Request to search for films with '{}' matching '{}' received.", by, query);
+        Set<SearchType> searchTypes = by.stream()
+                .map(SearchType::fromString)
+                .collect(Collectors.toSet());
+        Collection<FilmDto> films = filmService.searchFilms(query, searchTypes);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(films);
     }
 }

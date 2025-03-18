@@ -1,20 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmValidationException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserValidationException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 @RestControllerAdvice
@@ -28,10 +24,23 @@ public class GlobalExceptionHandler {
             e.getClass().getSimpleName(), e.getMessage());
         ErrorMessage errorMessage = new ErrorMessage("Internal server error.", null);
         return ResponseEntity.internalServerError().contentType(MediaType.APPLICATION_JSON)
-            .body(errorMessage);
+                .body(errorMessage);
     }
 
-    @ExceptionHandler({FilmValidationException.class, UserValidationException.class})
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(
+            final MethodArgumentNotValidException e) {
+        log.warn("Validation failed: {}", e.getMessage());
+        String errorDetails = e.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        ErrorMessage errorMessage = new ErrorMessage("Validation failed", errorDetails);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorMessage);
+    }
+
+    @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorMessage> handleValidationException(final ValidationException e) {
         log.warn("Encountered {}: returning 400 Bad Request. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
@@ -42,8 +51,7 @@ public class GlobalExceptionHandler {
             .body(errorMessage);
     }
 
-    @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class,
-        GenreNotFoundException.class, MpaRatingNotFoundException.class})
+    @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorMessage> handleNotFoundException(final NotFoundException e) {
         log.warn("Encountered {}: returning 404 Not Found. Message: {}",
             e.getClass().getSimpleName(), e.getMessage());
@@ -68,5 +76,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON)
             .body(errorMessage);
     }
-
 }

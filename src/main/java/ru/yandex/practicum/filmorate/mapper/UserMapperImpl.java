@@ -26,7 +26,8 @@ public class UserMapperImpl implements UserMapper {
         User user = new User();
         user.setEmail(newUserRequest.getEmail());
         user.setLogin(newUserRequest.getLogin());
-        user.setName(newUserRequest.getName());
+        user.setName(newUserRequest.getName().isBlank() ? newUserRequest.getLogin()
+            : newUserRequest.getName());
         user.setBirthday(newUserRequest.getBirthday());
         return user;
     }

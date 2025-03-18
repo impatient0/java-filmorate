@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.repository;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -15,8 +15,8 @@ public interface FriendshipStorage {
 
     void deleteDirectionalFriendship(long userId, long friendId);
 
-    Set<User> getUserFriends(long userId);
+    List<User> getUserFriends(long userId);
 
-    Set<User> getCommonFriends(long userId1, long userId2);
+    List<User> getCommonFriends(long userId1, long userId2);
 
 }

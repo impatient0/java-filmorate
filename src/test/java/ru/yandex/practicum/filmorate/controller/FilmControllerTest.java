@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,6 +14,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import ru.yandex.practicum.filmorate.dto.ErrorMessage;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -30,6 +34,7 @@ public class FilmControllerTest {
         + "independent surrealist body horror film written, directed, produced, and edited by "
         + "David Lynch.";
     private static final int MOCK_FILM_DURATION = 89;
+    private static final String filmsURI = "/films";
     @Autowired
     @SuppressWarnings("unused")
     private MockMvc mockMvc;
@@ -45,12 +50,10 @@ public class FilmControllerTest {
         film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
         film.setDescription(MOCK_FILM_DESCRIPTION);
         film.setDuration(MOCK_FILM_DURATION);
-        mockMvc.perform(
-                MockMvcRequestBuilders.post("/films").content(mapper.writeValueAsString(film))
-                    .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post(filmsURI).content(mapper.writeValueAsString(film))
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated());
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/films"))
-            .andExpect(status().isOk()).andReturn();
+        MvcResult result = mockMvc.perform(get(filmsURI)).andExpect(status().isOk()).andReturn();
         String jsonResponse = result.getResponse().getContentAsString();
         List<Film> actualResponse = mapper.readValue(jsonResponse, new TypeReference<>() {
         });
@@ -68,14 +71,13 @@ public class FilmControllerTest {
         film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
         film.setDescription(MOCK_FILM_DESCRIPTION);
         film.setDuration(MOCK_FILM_DURATION);
-        MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.post("/films").content(mapper.writeValueAsString(film))
-                    .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+        MvcResult result = mockMvc.perform(post(filmsURI).content(mapper.writeValueAsString(film))
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest()).andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when creating new film", actualResponse.getMessage());
+        assertEquals("Error when creating new film", actualResponse.getError());
         assertEquals("Invalid Film data: Film name must not be blank.",
             actualResponse.getDescription());
     }
@@ -88,9 +90,8 @@ public class FilmControllerTest {
         film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
         film.setDescription(MOCK_FILM_DESCRIPTION);
         film.setDuration(MOCK_FILM_DURATION);
-        MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.post("/films").content(mapper.writeValueAsString(film))
-                    .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+        MvcResult result = mockMvc.perform(post(filmsURI).content(mapper.writeValueAsString(film))
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isCreated()).andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
@@ -111,13 +112,13 @@ public class FilmControllerTest {
         film.setDuration(MOCK_FILM_DURATION);
         film.setId(-42L);
         MvcResult result = mockMvc.perform(
-                MockMvcRequestBuilders.put("/films").content(mapper.writeValueAsString(film))
+                MockMvcRequestBuilders.put(filmsURI).content(mapper.writeValueAsString(film))
                     .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNotFound())
             .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating film", actualResponse.getMessage());
+        assertEquals("Error when updating film", actualResponse.getError());
         assertEquals("Film with ID -42 not found", actualResponse.getDescription());
     }
 
@@ -130,7 +131,7 @@ public class FilmControllerTest {
         film.setDescription(MOCK_FILM_DESCRIPTION);
         film.setDuration(MOCK_FILM_DURATION);
         MvcResult resultPost = mockMvc.perform(
-                MockMvcRequestBuilders.post("/films").content(mapper.writeValueAsString(film))
+                post(filmsURI).content(mapper.writeValueAsString(film))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andReturn();
         String jsonResponse = resultPost.getResponse().getContentAsString();
@@ -140,12 +141,12 @@ public class FilmControllerTest {
         newFilm.setDuration(MOCK_FILM_DURATION);
         newFilm.setId(createdFilm.getId());
         MvcResult resultPut = mockMvc.perform(
-                MockMvcRequestBuilders.put("/films").content(mapper.writeValueAsString(newFilm))
+                MockMvcRequestBuilders.put(filmsURI).content(mapper.writeValueAsString(newFilm))
                     .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
             .andReturn();
         jsonResponse = resultPut.getResponse().getContentAsString();
         ErrorMessage actualResponse = mapper.readValue(jsonResponse, ErrorMessage.class);
-        assertEquals("Error when updating film", actualResponse.getMessage());
+        assertEquals("Error when updating film", actualResponse.getError());
         assertEquals("Invalid Film data: Film name must not be blank.",
             actualResponse.getDescription());
     }
@@ -159,7 +160,7 @@ public class FilmControllerTest {
         film.setDescription(MOCK_FILM_DESCRIPTION);
         film.setDuration(MOCK_FILM_DURATION);
         MvcResult resultPost = mockMvc.perform(
-                MockMvcRequestBuilders.post("/films").content(mapper.writeValueAsString(film))
+                post(filmsURI).content(mapper.writeValueAsString(film))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andReturn();
 
@@ -172,7 +173,7 @@ public class FilmControllerTest {
         newFilm.setDuration(42);
         newFilm.setId(createdFilm.getId());
         MvcResult resultPut = mockMvc.perform(
-                MockMvcRequestBuilders.put("/films").content(mapper.writeValueAsString(newFilm))
+                MockMvcRequestBuilders.put(filmsURI).content(mapper.writeValueAsString(newFilm))
                     .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk()).andReturn();
         String jsonResponsePut = resultPut.getResponse().getContentAsString();
@@ -181,5 +182,33 @@ public class FilmControllerTest {
         assertEquals(newFilm.getDuration(), updatedFilm.getDuration());
         assertEquals(newFilm.getDescription(), updatedFilm.getDescription());
         assertEquals(newFilm.getReleaseDate(), updatedFilm.getReleaseDate());
+    }
+
+    @Test
+    void shouldDeleteFilm() throws Exception {
+        Film film = new Film();
+        film.setName(MOCK_FILM_NAME);
+        film.setReleaseDate(MOCK_FILM_RELEASE_DATE);
+        film.setDescription(MOCK_FILM_DESCRIPTION);
+        film.setDuration(MOCK_FILM_DURATION);
+        MvcResult resultPost = mockMvc.perform(
+                post(filmsURI).content(mapper.writeValueAsString(film))
+                    .contentType(MediaType.APPLICATION_JSON)).andExpect(status().isCreated())
+            .andReturn();
+        String jsonResponse = resultPost.getResponse().getContentAsString();
+        Film createdFilm = mapper.readValue(jsonResponse, Film.class);
+
+        mockMvc.perform(delete(filmsURI + "/" + createdFilm.getId()))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get(filmsURI + "/" + createdFilm.getId())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn404ForDeleteRequestIfObjectDoesNotExist() throws Exception {
+        mockMvc.perform(delete(filmsURI + "/999999")).andExpect(status().isNotFound())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Error when deleting film"))
+            .andExpect(jsonPath("$.description").value("Film with ID 999999 not found"));
     }
 }
