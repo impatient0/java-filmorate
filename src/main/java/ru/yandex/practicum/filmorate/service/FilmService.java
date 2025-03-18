@@ -2,23 +2,35 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
-import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmValidationException;
+import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exception.MpaRatingNotFoundException;
+import ru.yandex.practicum.filmorate.exception.SearchParameterValidationException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.repository.*;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmWithRating;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.SearchType;
+import ru.yandex.practicum.filmorate.repository.DirectorStorage;
+import ru.yandex.practicum.filmorate.repository.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.GenreStorage;
+import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 @Service
 @RequiredArgsConstructor
@@ -167,11 +179,7 @@ public class FilmService {
         log.debug("Fetching common films for users {} and {}", userId, friendId);
         List<FilmWithRating> commonFilms = filmStorage.getCommonFilms(userId, friendId);
 
-        log.debug("Fetched {} common films", commonFilms.size());
-        for (FilmWithRating filmWithRating : commonFilms) {
-            Film film = filmWithRating.getFilm();
-            log.debug("Film: id={}, name={}, mpa={}, genres={}, rating={}", film.getId(), film.getName(), film.getMpa() != null ? film.getMpa().getName() : "null", film.getGenres(), filmWithRating.getAvgRating());
-        }
+        log.debug("Fetched common films: {}", commonFilms);
 
         return commonFilms.stream().map(mapper::mapToFilmDto).collect(Collectors.toList());
     }

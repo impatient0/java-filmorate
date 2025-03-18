@@ -1,18 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum SearchType {
     TITLE("title"),
     DIRECTOR("director");
 
     private final String value;
-
-    SearchType(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
 
     public static SearchType fromString(String value) {
         for (SearchType type : SearchType.values()) {
@@ -20,6 +17,6 @@ public enum SearchType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Недопустимый тип поиска: " + value);
+        throw new IllegalArgumentException("Invalid search type: " + value);
     }
 }
