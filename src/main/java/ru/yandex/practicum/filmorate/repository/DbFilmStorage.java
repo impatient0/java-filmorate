@@ -388,7 +388,7 @@ public class DbFilmStorage extends DbBaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public List<FilmWithRating> getDirectorFilmsBylikes(long directorId, Set<String> params) {
+    public List<FilmWithRating> getDirectorFilmsBylikes(long directorId, String params) {
         List<FilmWithRating> resultList = List.of();
         if (params.contains("rate") || params.contains("likes"))
             return jdbc.query(GET_BY_DIRECTOR_ID_RATING_QUERY, extractor, directorId);

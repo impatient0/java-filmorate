@@ -72,7 +72,7 @@ public class DirectorService {
     public void delDirector(long directorId) {
         if (directorStorage.getDirectorById(directorId).isEmpty()) {
             log.warn("Deleting director failed: director with ID {} not found", directorId);
-            throw new UserNotFoundException("Error when deleting director", directorId);
+            throw new DirectorNotFoundException("Error when deleting director", directorId);
         }
         log.debug("Director with ID {} was deleted", directorId);
         directorStorage.removeDirector(directorId);
