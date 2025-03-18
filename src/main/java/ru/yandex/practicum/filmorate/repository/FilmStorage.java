@@ -20,7 +20,7 @@ public interface FilmStorage {
 
     List<FilmWithRating> getAllFilms();
 
-    List<FilmWithRating> getDirectorFilmsBylikes(long directorId, Set<String> params);
+    List<FilmWithRating> getDirectorFilmsBylikes(long directorId, String params);
 
     List<FilmWithRating> getCommonFilms(long userId, long friendId);
 

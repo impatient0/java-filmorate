@@ -13,21 +13,19 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
 
     private static final String GET_USER_TAPE_QUERY = """
             SELECT
-                f.created_at as created_at,
-                f.user_id as user_id,
-                e.name as event_name,
-                o.name as operation_name,
-                f.feed_id as feed_id,
-                f.entity_id as entity_id
-            FROM user_feed f
-            LEFT JOIN events e ON f.event_id = e.event_id
-            LEFT JOIN operations o ON f.operation_id = o.operation_id
+                created_at,
+                user_id,
+                event_name,
+                operation_name,
+                feed_id,
+                entity_id
+            FROM user_feed
             WHERE user_id = ?
             ORDER BY created_at
             """;
 
     private static final String INSERT_USER_FEED_QUERY = "INSERT INTO user_feed "
-            + "(user_id, event_id, operation_id, entity_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+            + "(user_id, event_name, operation_name, entity_id, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
 
     public DbEventStorage(JdbcTemplate jdbc, RowMapper<Event> mapper) {
@@ -35,8 +33,8 @@ public class DbEventStorage extends DbBaseStorage<Event> implements EventStorage
     }
 
     @Override
-    public void insertUserFeedQuery(long userId, int eventId, int operationId, long entityId) {
-        jdbc.update(INSERT_USER_FEED_QUERY, userId, eventId, operationId, entityId);
+    public void insertUserFeedQuery(long userId, String eventName, String operationName, long entityId) {
+        jdbc.update(INSERT_USER_FEED_QUERY, userId, eventName, operationName, entityId);
     }
 
     @Override
